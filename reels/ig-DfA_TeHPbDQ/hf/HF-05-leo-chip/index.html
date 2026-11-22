@@ -9,5 +9,5 @@ const g=document.getElementById('c').getContext('2d');let IM;
 window.ready=(async()=>{IM=await X.load({LEO:'../../assets/cut/GPT-05_00.png'});})();
 window.render=t=>{const j=Math.round(t*24);g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,1440,1080);
  const p=POSES[SEQ[Math.min(j,SEQ.length-1)]];const sc=j===0?1.04:1;
- X.draw(g,IM.LEO,{cx:p[0],cy:p[1],w:p[2],h:p[3],rot:p[4],scale:sc,filter:'brightness(1.04) saturate(.88) hue-rotate(6deg)',shadow:{op:.1,blur:5,dy:2}});};
+ X.draw(g,IM.LEO,{cx:p[0],cy:p[1],w:p[2],h:p[3],rot:p[4],scale:sc,inset:[.005,.005,.005,.07],filter:'brightness(1.04) saturate(.88) hue-rotate(6deg)',shadow:{op:.1,blur:5,dy:2}});};
 </script></body></html>

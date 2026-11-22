@@ -127,3 +127,28 @@ Requirements and setup:
 
 - **The reference video and its full-resolution frames.** It's Lovable's ad and this repo is public. `fetch_ref.sh` downloads it again.
 - **The render frame folders** (about 3 GB). Re-render with `render.mjs`.
+
+## 8. Live status (updated as work lands)
+
+**2026-11-22, evening**
+
+- **`ASSETS.md`:** the full inventory of the reel's assets: 31 HyperFrames code builds, 13 gpt-image-2 images and 34 live-action placeholders.
+- **gpt-image-2 images:** all 13 generated.
+  - Sheets 01–05 and 07–11 were regenerated in the reference's scrawled hand-drawn style. The owner had said the first versions looked "too clean".
+  - The transparent cutouts are in `assets/cut/` (see its README). The clean first versions are kept in `assets/gpt/v1-clean/`.
+- **Shared tools:** `hf/lib/` holds:
+  - `render.mjs`: frame renderer
+  - `compare.py`: reference | ours sheets
+  - `overlay_check.py`: ours tinted yellow over the reference
+  - `kit.js`: sticker motion and line-boil crayon
+- **HF-01/02 captions:** done.
+  - `hf/HF-01-captions` is one full-length transparent track.
+  - Every word-pop is fitted to its position and size measured in the reference; the bottom subtitles are included.
+  - The `.mov` is 105 MB, so it's on the `big-files` release rather than in git.
+- **In progress:** three builder agents, one per group:
+  - screens: Meet, error box, phone chat, converter site, Chrome
+  - the Chatly and LinkUp app screens, plus the end card and outro
+  - paper and kinetic type: report card, kinetic type, map pile-up, MEETING TIME? poster, status signs
+
+  Each asset goes in `hf/HF-XX-name/` with `out/` and `qa/`.
+- **Files over 95 MB** are listed in `reels/ig-DfA_TeHPbDQ/BIG-FILES-NOT-IN-GIT.txt` and attached to the `big-files` release.

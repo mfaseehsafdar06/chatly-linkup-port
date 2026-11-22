@@ -1,0 +1,60 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="../HF-07-meet/common.js"></script><script src="../HF-07-meet/meet.js"></script>
+<style>
+  @font-face{font-family:IB;src:url('file:///Users/faseeh/Library/Fonts/Inter-Bold.ttf')}
+  canvas{position:absolute;left:0;top:0}
+  .w{position:absolute;font-family:IB,'Helvetica Neue',Arial,sans-serif;font-weight:700;color:#fff;white-space:nowrap;line-height:1;
+     text-shadow:0 2px 4px rgba(0,0,0,.28)}
+</style>
+</head><body><div id="stage"><canvas id="c" width="1440" height="1080"></canvas><div id="dom"></div></div>
+<script>
+// HF-10 · Ying spotlight tile + "UmMMmMmm" / "its" / "3AM" (shot 10, ref 11.125–13.500, f267–f324, 57 frames).
+// PARAMS.layer = 'ui'  (default) -> HF-10-ying_ui.mov : surround + lavender tile border + name + Um/its text; tile interior is a hole.
+// PARAMS.layer = '3am'           -> HF-10-ying_3am.mov: only the giant "3AM" (from asset frame 35 = ref 12.583, f302).
+//   Comp: Y1 plate in tile hole -> 3AM layer -> Ying person cutout (plate x per-frame matte) -> ui layer.
+// Text timing (asset frames, measured from the ref on 2s): Um 0, UmM 3, UmMM 5, UmMMm 7, UmMMmM 9, UmMMmMm 11, UmMMmMmm 13, clears 15;
+// "its" from 15 to end. The surround is a code-drawn dark blur placeholder (replace with a blurred enlargement of Y1 if wanted).
+CM.initGuide();
+const L = CM.P.layer || 'ui';
+const g = document.getElementById('c').getContext('2d'), dom = document.getElementById('dom');
+const T = { x: 64, y: 131, w: 1324, h: 735, r: 31 }, B = 14;          // tile interior (hole) and border width
+function rr(x, y, w, h, r) { g.beginPath(); g.roundRect(x, y, w, h, r); }
+function drawUI() {
+  g.clearRect(0, 0, 1440, 1080);
+  // surround: dark blurred plate stand-in
+  g.save(); g.filter = 'blur(38px)';
+  g.fillStyle = '#2c2b29'; g.fillRect(-60, -60, 1560, 1100);
+  g.fillStyle = 'rgba(214,206,190,.75)'; g.fillRect(-40, 40, 900, 80);            // pale band top-left (window light)
+  g.fillStyle = 'rgba(120,110,95,.55)'; g.fillRect(820, -40, 700, 140);
+  g.fillStyle = 'rgba(70,66,60,.9)'; g.beginPath(); g.ellipse(80, 330, 120, 220, 0, 0, 7); g.fill();
+  g.fillStyle = 'rgba(20,20,20,.75)'; g.fillRect(-40, 880, 1520, 100);
+  g.restore();
+  g.fillStyle = '#0f0f10'; g.fillRect(0, 970, 1440, 110);                         // Meet bottom band
+  g.fillStyle = '#1d1e21'; rr(1030, 1062, 520, 70, 34); g.fill();                 // toolbar pill peeking
+  // border ring
+  g.fillStyle = '#a9bff3'; rr(T.x - B, T.y - B, T.w + 2 * B, T.h + 2 * B, T.r + B); g.fill();
+  g.globalCompositeOperation = 'destination-out'; rr(T.x, T.y, T.w, T.h, T.r); g.fill(); g.globalCompositeOperation = 'source-over';
+}
+const UM = [[0, 'Um'], [3, 'UmM'], [5, 'UmMM'], [7, 'UmMMm'], [9, 'UmMMmM'], [11, 'UmMMmMm'], [13, 'UmMMmMmm']];
+let threeAM = '';
+window.ready = (async () => {
+  await CM.fonts(); await document.fonts.load('700 100px IB'); MEET.injectCSS();
+  if (L === 'ui') drawUI();
+  // fit 3AM: cap 225..690, x 87..1347
+  const fs = 465 / 0.727, s = document.createElement('span'); s.className = 'w'; s.style.fontSize = fs + 'px'; s.textContent = '3AM'; s.style.letterSpacing = '-0.02em';
+  document.body.appendChild(s); const wpx = s.getBoundingClientRect().width; s.remove();
+  const sx = 1260 / wpx;
+  threeAM = `<div class="w" style="left:87px;top:${690 - fs * 0.864}px;font-size:${fs}px;letter-spacing:-0.02em;transform:scaleX(${sx});transform-origin:0 0;text-shadow:none">3AM</div>`;
+  document.getElementById('stage').style.opacity = CM.guideOpacity();
+})();
+window.render = async t => {
+  await CM.guideAt(t);
+  const k = Math.round(t * 24); let h = '';
+  if (L === 'ui') {
+    h += `<div class="mt-lbl" style="left:108px;top:815px;transform:translateY(-78%);font-size:66px;font-weight:450;color:#f2f2f2;text-shadow:0 2px 5px rgba(0,0,0,.45)">Ying</div>`;
+    if (k < 15) { let s = ''; for (const [f, w] of UM) if (k >= f) s = w; h += `<div class="w" style="left:720px;top:${304 - 115 * 0.864}px;font-size:115px;transform:translateX(-50%)">${s}</div>`; }
+    else h += `<div class="w" style="left:155px;top:${198 - 68 * .864}px;font-size:68px">its</div>`;
+  } else if (k >= 35) h += threeAM;
+  dom.innerHTML = h;
+};
+</script></body></html>

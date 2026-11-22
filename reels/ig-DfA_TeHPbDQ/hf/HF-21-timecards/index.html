@@ -1,0 +1,58 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../_linkup/linkup.css">
+<style>
+#bgfill { position:absolute; inset:0; background:#EFEADF; }
+.view { position:absolute; inset:0; transform-origin: 160px 540px; }
+.flat { position:absolute; left:-200px; top:-200px; width:2400px; height:1600px; background: linear-gradient(180deg,#F5F1E7,#F1ECE1); }
+.flat > * { position:absolute; }
+.logo { left:350px; top:290px; font-size:50px; letter-spacing:.08em; color:#1F1E1C; }
+.logo i { font-style:normal; color:#E2728F; }
+.sub { left:350px; top:440px; font-size:24px; color:#8B877D; }
+.big { left:357px; top:500px; font-size:96px; letter-spacing:.11em; color:#1F1E1C; white-space:nowrap; }
+.tc { top:725px; width:292px; height:232px; border-radius:34px; background:#FBF9F4; box-shadow:0 3px 14px rgba(60,50,30,.10), 0 0 0 1px rgba(0,0,0,.025); box-sizing:border-box; padding:34px 28px; }
+.tc .nm { font-size:23px; color:#3B3933; }
+.tc .tm { font-size:40px; letter-spacing:.04em; margin:12px 0 10px; color:#1F1E1C; }
+.tc .ct { font-size:20px; color:#8B877D; display:flex; align-items:center; gap:6px; }
+.where { left:362px; top:1060px; font-size:48px; letter-spacing:.05em; color:#1F1E1C; transform:rotate(-2deg); transform-origin:left center; }
+#g2 { left:0; top:0; }
+</style></head><body>
+<div id="stage" class="lu"><div id="bgfill"></div>
+  <div class="view" id="v1"></div><div class="view" id="v2"></div>
+</div>
+<template id="tpl"><div class="flat">
+  <div class="logo lu-hand">LINK <i>UP!</i></div>
+  <div class="sub">60 min · 7-day window · 5 people</div>
+  <div class="big lu-hand">CREATOR CREW</div>
+  <div class="where lu-hand">Where everyone is</div>
+  <canvas class="gl" width="2400" height="1600" style="left:0;top:0"></canvas>
+</div></template>
+<script src="../lib/kit.js"></script>
+<script src="../_linkup/vendor/d3.min.js"></script><script src="../_linkup/vendor/topojson-client.min.js"></script><script src="../_linkup/vendor/land-50m.js"></script>
+<script src="../_linkup/linkup.js"></script>
+<script>
+// HF-21: shot 41, ref 51.46-53.08 (t=0 at 51.46). Angled screen, focus pull to sharp by 52.3, TIME sticker 51.80.
+const T0 = 51.46, P = LU.PEOPLE, $ = s => document.querySelector(s), stage = $('#stage');
+const ORDER = ['ying', 'fin', 'izy', 'leo', 'luke'];
+const RE = `<svg width="16" height="16" viewBox="0 0 24 24" fill="none" stroke="#8B877D" stroke-width="2" stroke-linecap="round"><path d="M20 12a8 8 0 1 1-3-6.2M20 4v5h-5"/></svg>`;
+const views = [$('#v1'), $('#v2')].map(v => { v.appendChild($('#tpl').content.cloneNode(true)); const f = v.querySelector('.flat');
+  ORDER.forEach((k, i) => { const p = P[k], d = document.createElement('div'); d.className = 'tc'; d.style.left = (365 + i * 327) + 'px';
+    d.innerHTML = `<div class="nm">${p.name}</div><div class="tm lu-hand">${LU.timeFor(p, 13, 36)}</div><div class="ct">${k === 'ying' || k === 'fin' ? '' : RE}${p.city}</div>`; f.appendChild(d); });
+  return v; });
+const stk = LU.sticker(stage, 'time', [690, 144, 905, 243], 51.80 - T0, 21);
+const cur = LU.cursorEl(stage);
+window.ready = (async () => { await LU.loadLand('50m'); await stk.ready; await document.fonts.ready;
+  views.forEach(v => { const g = v.querySelector('.gl').getContext('2d'); LU.drawGlobe(g, { cx: 1560, cy: 1660, r: 400, lon0: 20, lat0: 25 }); }); })();
+// v1 = sharp near plane, v2 = blurred copy masked in towards the far (right) side: depth of field on an angled screen
+window.render = t => {
+  const dr = [Math.sin(t * 1.4) * 5, t * 9], s = 1 + t * 0.012;
+  const tf = `translate(${dr[0]}px,${dr[1]}px) perspective(1500px) rotateY(27deg) rotateX(4deg) scale(${s})`;
+  const pull = HF.clamp(1 - (t - 0.1) / 0.74); // 1 = fully defocused, 0 = in focus (by 52.30)
+  const nearBlur = 7 * pull * pull;
+  views[0].style.transform = tf; views[1].style.transform = tf;
+  views[0].style.filter = nearBlur > 0.05 ? `blur(${nearBlur}px)` : 'none';
+  views[1].style.filter = `blur(${Math.max(nearBlur, 5.5)}px)`;
+  views[1].style.webkitMaskImage = `linear-gradient(90deg, transparent 0px, transparent 640px, #000 1050px)`;
+  cur.set(412 + dr[0] * .5, 718 + dr[1] * .6, 'arrow', 1);
+  stk.set(t);
+};
+</script></body></html>

@@ -33,10 +33,10 @@ const GC = { cx: 737, cy: 855, r: 500 };
 // pin screen targets (ref 960 px x1.5) and card photo frames (w,h at 1440)
 const SEQ = [
   { k: 'leo', t: 53.60, pin: [726, 771], ph: { w: 513, h: 285, duo: true }, tm: '7:31 AM' },
-  { k: 'izy', t: 54.20, pin: [745, 900], ph: { w: 455, h: 555, gray: true }, tm: '11:31 PM' },
+  { k: 'izy', t: 54.20, pin: [745, 862], cur: [748, 955], ph: { w: 455, h: 555, gray: true }, tm: '11:31 PM' },
   { k: 'luke', t: 54.75, pin: [717, 922], ph: { w: 488, h: 627 }, tm: '1:31 AM' },
   { k: 'ying', t: 55.40, pin: [748, 800], ph: { w: 510, h: 395 }, tm: '1:32 PM' },
-  { k: 'fin', t: 56.00, pin: [717, 889], ph: { w: 482, h: 654 }, tm: '3:32 PM' },
+  { k: 'fin', t: 56.00, pin: [717, 850], ph: { w: 482, h: 610 }, tm: '3:32 PM' },
 ];
 // solve view (lon0,lat0) so the person's pin projects to the target
 function solveView(p, [tx, ty]) {
@@ -64,7 +64,7 @@ const cur = LU.cursorEl(stage);
 const stW = LU.sticker(stage, 'working', [695, 843, 1178, 954], 53.40 - T0, 53, 54.75 - T0);
 const stP = LU.sticker(stage, 'priorities', [825, 888, 1155, 1013], 55.40 - T0, 55);
 // camera: pan left during Ying, push-in on Fin
-const CAM = [[0, [0, 0, 1]], [2.22, [0, 0, 1]], [2.30, [-55, 0, 1]], [2.84, [-55, 0, 1]], [2.92, [-20, 30, 1.12]], [3.42, [-24, 32, 1.13]]];
+const CAM = [[0, [0, 0, 1]], [2.22, [0, 0, 1]], [2.30, [-55, 0, 1]], [2.84, [-55, 0, 1]], [2.92, [-20, 30, 1.2]], [3.42, [-24, 32, 1.21]]];
 window.ready = (async () => { await LU.loadLand('50m'); await stW.ready; await stP.ready; await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {}))); })();
 const ang = (a, b, u) => { let d = ((b - a + 540) % 360) - 180; return a + d * u; };
 window.render = t => {
@@ -87,7 +87,7 @@ window.render = t => {
   const scr = (x, y) => [720 + (x - 720) * cam[2] + cam[0] + dr[0], 300 + (y - 300) * cam[2] + cam[1] + dr[1]];
   let cx, cy, kind = 'hand';
   if (i < 0) { [cx, cy] = LU.lerpKeys([[0, [722, 787]], [0.32, [724, 796]], [0.5, [729, 798]]], t); kind = 'arrow'; }
-  else { const s = SEQ[i]; [cx, cy] = [s.pin[0] + 4, s.pin[1] + 24]; const nx = SEQ[i + 1]; if (nx && abs > nx.t - 2 / 24) { const u = (abs - (nx.t - 2 / 24)) * 12; cx += (nx.pin[0] + 4 - cx) * u; cy += (nx.pin[1] + 24 - cy) * u; } }
+  else { const s = SEQ[i]; [cx, cy] = s.cur || [s.pin[0] + 4, s.pin[1] + 24]; const nx = SEQ[i + 1]; if (nx && abs > nx.t - 2 / 24) { const u = (abs - (nx.t - 2 / 24)) * 12; cx += (nx.pin[0] + 4 - cx) * u; cy += (nx.pin[1] + 24 - cy) * u; } }
   const [sx, sy] = scr(cx, cy); cur.set(sx, sy, kind, cam[2]);
   stW.set(t); stP.set(t);
 };
