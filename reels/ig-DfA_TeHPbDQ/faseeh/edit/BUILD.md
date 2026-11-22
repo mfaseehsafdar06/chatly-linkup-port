@@ -93,3 +93,13 @@
   - blues and skies muted by 38%, overall saturation −6%
   - Pro-Mist diffusion at 14%
   - **the soft gradient:** warm amber light falling from the top left (screen-blended at 15%), a 10% shade toward the bottom, and a vignette
+
+## v4 (2026-11-23, "add grain")
+**Outputs:**
+- `out/this-is-faseeh-chatly-v4-4x3.mp4`: delivery, x264 `-tune grain` crf 22, about 24 Mbps, 235 MB
+- `out/...-v4-4x3-MASTER.mp4`: crf 14, 514 MB
+
+**Grain:** `grain()` in `finish()`.
+- 24 pre-made fields, a new one every frame: σ 0.75 px luma clumps + 15% chroma.
+- Strength `GRAIN_AMT=7.5`, weighted toward the mids.
+- Applied before stickers and captions, so the text stays clean. Not applied on the official outro.

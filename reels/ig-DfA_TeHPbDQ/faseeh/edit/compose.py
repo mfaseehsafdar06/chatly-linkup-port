@@ -117,7 +117,18 @@ _FVIG = (1 - .16 * np.clip((_r - .45) / .6, 0, 1) ** 1.7)[..., None]
 _top = np.clip(1 - _gy / (H * .75), 0, 1) ** 1.6 * np.clip(1.15 - np.abs(_gx - W * .38) / (W * .9), 0, 1)
 _WARM = (_top[..., None] * np.float32([150, 205, 255]))            # BGR amber light
 _BOT = (1 - .10 * np.clip((_gy - H * .55) / (H * .45), 0, 1) ** 1.4)[..., None]
-def finish(img, k=1.0):
+# film grain: 24 pre-made fields (fine 35mm-like, ~1.3 px clumps, slight colour), a new one every frame, strongest in the mids
+_rg = np.random.default_rng(1122); _GRAIN = []
+for _i in range(24):
+    n = _rg.normal(0, 1, (H, W)).astype(np.float32); n = cv2.GaussianBlur(n, (0, 0), .75); n /= n.std()
+    c = cv2.GaussianBlur(_rg.normal(0, 1, (H // 2, W // 2, 3)).astype(np.float32), (0, 0), 1.0); c = cv2.resize(c, (W, H)); c /= c.std()
+    _GRAIN.append((n[..., None] * .85 + c * .15).astype(np.float32))
+GRAIN_AMT = 7.5
+def grain(out, t):
+    g = _GRAIN[int(round(t * FPS)) % 24]; L = out.mean(2, keepdims=True) / 255
+    w = .55 + 1.8 * L * (1 - L)                                             # more in the mids, less in clipped whites/blacks
+    return out + g * GRAIN_AMT * w
+def finish(img, k=1.0, t=0.0):
     lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB); Lc = lab[..., 0]
     a = lab[..., 1].astype(np.float32) - 128; b = lab[..., 2].astype(np.float32) - 128; sat = _G.SAT[Lc]
     a = a * sat + _G.DA[Lc]; b = b * sat + _G.DB[Lc]
@@ -131,6 +142,7 @@ def finish(img, k=1.0):
     mist = cv2.GaussianBlur(out, (0, 0), 16); out = out * .86 + mist * .14
     out = 255 - (255 - out) * (1 - .15 * _WARM / 255)                      # warm top light (screen) - the soft gradient
     out = out * _BOT * _FVIG
+    out = grain(out, t)
     if k < 1: out = img.astype(np.float32) * (1 - k) + out * k
     return np.clip(out, 0, 255).astype(np.uint8)
 
@@ -299,7 +311,7 @@ def frame_at(t):
     elif t < 73.35:
         img = blur_dark(live(72.05, .55), .4, 6); img = over(img, OV['P-05-endcard'].frame(int((t - 72.1) * FPS)))
     else:            img = gfx('outro', t - 73.35)
-    if t < 73.35: img = finish(img)
+    if t < 73.35: img = finish(img, t=t)
     # paper stickers slapped on the screens on the VO word (ref: LOCATION / WORKING ON / PRIORITIES / ANYTIME)
     for (t0, t1, k, cx, cy) in SCR_STK:
         if t0 - 1e-6 <= t < t1 - 1e-6: img = pop(img, STK[k], t, t0, cx, cy, hash(k) % 97)
