@@ -1,7 +1,7 @@
 <!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}canvas{display:block}</style></head><body>
 <canvas id="c" width="1440" height="1080"></canvas>
 <script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script src="../_props/clip.js"></script><script>
-// P-26 Sticky notes slapped onto a monitor one after another (hand slap like the report-card stickers), ALPHA, 48 frames (2.0 s).
+// P-26 Sticky notes slapped onto a monitor one after another (2-frame blurred throw-in + press, like the ref map stickers), ALPHA, 48 frames (2.0 s).
 // PARAMS.region = 'monitor' (default, desktop monitor filling the frame) | 'laptop' (laptop screen in a 4:3 handheld shot,
 // measured on the placeholder plate = ref shot 37 frame 1095). Notes are placed in fractions of the region.
 // ======== CONFIG ========
@@ -12,10 +12,10 @@ const NOTES=[ // cutout, centre (fraction of region), width (fraction of region 
  ['F-03_01',[.72,.27],.31,5, 12,[.55,.75]],
  ['F-03_02',[.30,.74],.31,4, 22,[-.6,.55]],
  ['F-03_03',[.74,.72],.32,-5,32,[.6,.55]]];
-const HAND_W=1.35;                                                      // slap hand width as a multiple of the note width
+const HAND=false, HAND_W=1.35;   // HAND=true adds the slap hand (long-forearm H0L); off by default: at this scale the stretched arm reads fake                                                      // slap hand width as a multiple of the note width
 // ========================
 const R=REGIONS[(window.PARAMS&&window.PARAMS.region)||'monitor'],RW=R[2]-R[0],RH=R[3]-R[1];
 CLIP({items:NOTES.map(([src,c,w,rot,on,fr])=>{const W=w*RW;const fx=fr[0]*RW,fy=fr[1]*RH;const a=Math.atan2(-fy,-fx)*180/Math.PI;
  return {src:C+src+'.png',cx:R[0]+c[0]*RW,cy:R[1]+c[1]*RH,w:W,rot,on,anim:'slap',curl:1,boilAmp:.6,inset:[.004,.004,.006,.02],
-  slap:{from:[fx,fy],hand:{w:W*HAND_W,rot:a+90+(fx<0?-25:25),at:[fx*.12,fy*.12]}}};})});
+  slap:{from:[fx*.45,fy*.45],hand:HAND?{w:W*HAND_W,rot:a+90+(fx<0?-25:25),at:[fx*.12,fy*.12]}:null}};})});
 </script></body></html>

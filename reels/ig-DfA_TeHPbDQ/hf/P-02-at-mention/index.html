@@ -1,0 +1,61 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../reference/chatly-ui-kit/chatly-ui.css">
+<link rel="stylesheet" href="../_chatly/pl.css">
+</head><body><div id="stage"></div>
+<script type="module">
+// P-02: Chatly home composer. Typing "@hook" opens the mentions menu filtered to the Prompt library (mentions-menu search mode:
+// group label + rows, first row selected, prompt preview card to the right). The cursor clicks "Scroll-stopping hooks"; the "@hook" text is
+// removed and the "Fill in the blanks" modal opens (insertPromptMention -> setFillRequest -> AddPromptModal).
+// PARAMS.still = 1 -> 1920x1200 still with the menu + preview open.
+import { CU, USER, mentionMenu, promptPreview, fillModal, cursor, stage, keys, clamp, MINE } from '../_chatly/pl.js';
+const P = window.PARAMS || {};
+const PROMPTS = [MINE, { name: 'Hashtag pack', prompt: 'Give me 15 hashtags for a {{platform}} post about {{topic}}, mixing big and niche tags.', vis: 'private' },
+  { name: 'Hook rewrite (5 variations)', prompt: 'Rewrite this hook 5 ways for {{account}}: {{hook}}', vis: 'private' }];
+const TYPE = [[0.35, '@h'], [0.47, '@ho'], [0.57, '@hoo'], [0.68, '@hook']];
+const T_CLICK = 1.62, T_MODAL = 1.68;
+const query = t => { let q = ''; for (const [a, s] of TYPE) if (t >= a) q = s; return t >= T_CLICK + 0.04 ? '' : q; };
+const matches = q => PROMPTS.filter(p => p.name.toLowerCase().includes(q.slice(1).toLowerCase()));
+const app = (text, h = 1080) => CU.appDesktop({ w: 1920, h, sidebar: { user: USER, recents: ['Hooks for @gymtok.daily', 'Leg day carousel ideas', 'Study hacks captions', 'Sneaker drop countdown', 'Meal prep reel script'] },
+  navbar: { download: true, upgrade: true }, homeHTML: CU.homeV2({ vh: h, vw: 1920, prompt: text ? { text, caret: true, state: 'typing' } : { placeholder: 'Ask anything...', caret: true } }) });
+let S, G = {};
+const box = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, l: r.left, t: r.top, w: r.width, h: r.height, b: r.bottom, r: r.right }; };
+function overlay(t, q) {
+  let o = '';
+  if (q && t < T_CLICK + 0.04) {
+    const items = matches(q), mm = mentionMenu({ items, selected: 0 });
+    o += `<div style="position:absolute;z-index:60;left:${G.caret.l - 6}px;top:${G.caret.b + 8}px">${mm}</div>`;
+    o += `<div style="position:absolute;z-index:60;left:${G.caret.l - 6 + 280 + 8}px;top:${G.caret.b + 8}px">${promptPreview(items[0])}</div>`;
+  }
+  if (t >= T_MODAL) { const u = clamp((t - T_MODAL) / 0.2), e = 1 - Math.pow(1 - u, 3);
+    o += `<div style="position:absolute;inset:0;z-index:100;opacity:${e}">${fillModal({ active: 'platform', caret: t > T_MODAL + 0.3 })}</div>`;
+    if (e < 1) o = o.replace('class="modal pl" id="modal"', `class="modal pl" id="modal" style="transform:translate(-50%,-50%) scale(${0.96 + 0.04 * e})"`); }
+  return o;
+}
+const html = (t, extra = '') => { const q = query(t); return `<div style="position:relative;width:1920px;height:1080px">${app(q)}${overlay(t, q)}${extra}</div>`; };
+window.ready = (async () => {
+  if (P.still) { const st = document.getElementById('stage'); st.style.width = '1920px'; st.style.height = '1200px'; st.innerHTML = `<div id="w" style="position:relative;width:1920px;height:1200px">${app('@hook', 1200)}</div>`;
+    await document.fonts.ready; const c = box(st.querySelector('.cu-caret')); G.caret = c;
+    st.querySelector('#w').insertAdjacentHTML('beforeend', `<div style="position:absolute;z-index:60;left:${c.l - 6}px;top:${c.b + 8}px">${mentionMenu({ items: matches('@hook') })}</div><div style="position:absolute;z-index:60;left:${c.l + 282}px;top:${c.b + 8}px">${promptPreview(MINE)}</div>`); return; }
+  S = stage(); await document.fonts.load('16px GS'); await document.fonts.ready;
+  S.sharp.style.transform = 'none'; S.sharp.innerHTML = `<div style="position:relative;width:1920px;height:1080px">${app('@hook')}</div>`;
+  G.caret = box(S.sharp.querySelector('.cu-caret')); G.pb = box(S.sharp.querySelector('.cu-pb'));
+  S.sharp.innerHTML = html(1.0); G.mm = box(S.sharp.querySelector('#mm')); G.pv = box(S.sharp.querySelector('#pv')); G.row = box(S.sharp.querySelector('#mm .opt'));
+  S.sharp.innerHTML = html(2.4); G.modal = box(S.sharp.querySelector('#modal'));
+})();
+window.render = t => {
+  if (P.still) return;
+  const mid = { x: (G.mm.l + G.pv.r) / 2, y: (G.caret.t + Math.max(G.mm.b, G.pv.b)) / 2 };
+  const K = [
+    [0, [2.35, G.caret.l + 120, G.caret.y + 20, 640, 520, 6, -0.6]],
+    [0.4, [2.3, G.caret.l + 120, G.caret.y + 30, 640, 500, 6, -0.6]],
+    [0.85, [1.62, mid.x, mid.y, 720, 560, 6, -0.5]],
+    [1.55, [1.74, mid.x - 60, mid.y + 10, 700, 560, 5.5, -0.4]],
+    [1.95, [1.34, G.modal.x, G.modal.y - 40, 720, 520, 6, -0.6]],
+    [2.5, [1.4, G.modal.x, G.modal.y - 120, 720, 420, 6, -0.6]],
+  ];
+  const [s, ax, ay, sx, sy, ry, rz] = keys(K, t);
+  let cur = '';
+  if (t > 0.9 && t < T_MODAL + 0.25) { const p = keys([[0.9, [G.row.x + 220, G.row.y + 210]], [1.45, [G.row.l + 150, G.row.y - 5]], [2.0, [G.row.l + 146, G.row.y - 2]]], t); cur = cursor(p[0], p[1], t > 1.4 ? 'hand' : 'arrow'); }
+  S.frame(html(t, cur), { s, ax, ay, sx, sy, ry, rz, blur: 3.5 });
+};
+</script></body></html>

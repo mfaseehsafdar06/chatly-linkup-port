@@ -52,8 +52,8 @@ html, body { margin:0; background:#fff; }
 .btn.outline { border:1px solid var(--b2); color:var(--t1); }
 .btn.dis { opacity:.4; }
 /* modal (ModalDialog) */
-.ovl { position:absolute; inset:0; background:rgba(0,0,0,.2); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); }
-.modal { position:absolute; left:50%; top:50%; width:640px; transform:translate(-50%,-50%); background:#fff; border-radius:28px; padding:28px; box-shadow:var(--sh-md); display:flex; flex-direction:column; gap:28px; }
+.ovl { position:absolute; inset:0; z-index:40; background:rgba(0,0,0,.2); backdrop-filter:blur(2px); -webkit-backdrop-filter:blur(2px); }
+.modal { position:absolute; z-index:41; left:50%; top:50%; width:640px; transform:translate(-50%,-50%); background:#fff; border-radius:28px; padding:28px; box-shadow:var(--sh-md); display:flex; flex-direction:column; gap:28px; }
 .mh { display:flex; align-items:flex-start; gap:12px; }
 .mh .tt { flex:1; min-width:0; display:flex; flex-direction:column; gap:4px; }
 .mf { display:flex; justify-content:flex-end; gap:8px; }
@@ -92,7 +92,7 @@ html, body { margin:0; background:#fff; }
 /* used-prompt pill */
 .upill { display:inline-flex; height:24px; align-items:center; gap:6px; border-radius:8px; background:var(--fs); padding:0 8px; font-size:12px; letter-spacing:.04em; color:var(--t2); }
 /* cursor (in app coordinates, moves with the filmed screen) */
-.mcur { position:absolute; width:0; height:0; z-index:50; pointer-events:none; }
+.mcur { position:absolute; width:0; height:0; z-index:999; pointer-events:none; }
 .mcur svg { position:absolute; left:0; top:0; overflow:visible; }
 #blur { filter: blur(4px); }
 #sharp { -webkit-mask-image: radial-gradient(ellipse 50% 54% at var(--fx,50%) var(--fy,50%), #000 58%, transparent 100%); }

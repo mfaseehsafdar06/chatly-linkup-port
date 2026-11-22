@@ -1,0 +1,86 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../reference/chatly-ui-kit/chatly-ui.css">
+<link rel="stylesheet" href="../_chatly/pl.css">
+<style>.pvh { padding-top:1px; padding-bottom:1px; }</style>
+</head><body><div id="stage"></div>
+<script type="module">
+// P-03: "Fill in the blanks" modal (FillPromptVariablesModal). Each field typed in turn; the preview chips go empty -> active -> filled
+// (getVariableChipState). "Add to prompt" drops the filled prompt into the composer with the used-prompt pill and the filled values
+// highlighted as FILLED chips (prompt-value-highlight); send; the reply starts streaming.
+// PARAMS.still = 1 -> 1920x1200 still of the modal mid-fill.
+import { CU, USER, fillModal, fillPrompt, segments, chip, ic, cursor, stage, keys, clamp, TEMPLATE, NAME } from '../_chatly/pl.js';
+const P = window.PARAMS || {};
+const V = { platform: 'TikTok', topic: 'leg day', account: '@gymtok.daily', audience: 'gym beginners' };
+const PLAN = [['platform', 0.15, 0.48], ['topic', 0.66, 1.02], ['account', 1.2, 1.72], ['audience', 1.9, 2.4]]; // [field, start, end]; Tab between
+const T_ADD = 2.56, T_CLOSE = 2.62, T_SEND = 3.22, T_CHAT = 3.32;
+function fillState(t) {
+  const values = {}; let active = null;
+  for (let i = 0; i < PLAN.length; i++) { const [n, a, b] = PLAN[i]; const next = PLAN[i + 1];
+    if (t >= a - 0.12) active = n;
+    const k = clamp(Math.floor((t - a) / ((b - a) / V[n].length)) + 1, 0, V[n].length); if (t >= a) values[n] = V[n].slice(0, k);
+    if (next && t >= next[1] - 0.12) active = next[0]; }
+  if (t < 0.03) active = 'platform';
+  if (t >= T_ADD) active = null; // submit blurs the field
+  return { values, active };
+}
+const RECENTS = ['Hooks for @gymtok.daily', 'Leg day carousel ideas', 'Study hacks captions', 'Sneaker drop countdown', 'Meal prep reel script'];
+// composer with the used-prompt pill + FILLED value highlights
+const filledHTML = () => segments(TEMPLATE).map(s => s.v != null ? chip(V[s.v], 'filled pvh') : s.t).join('');
+const pill = `<div style="display:flex;padding:0 4px"><span class="upill pl">${ic('PromptLibraryIcon', 14, 1.2)}<span>${NAME}</span></span></div>`;
+function home(state, h = 1080) {
+  let pb;
+  if (state === 'filled') pb = CU.promptBox({ text: '§', caret: true, state: 'typing' }).replace('<span class="cu-typed">§</span>', `<span class="cu-typed pl" style="font-family:inherit">${filledHTML()}</span>`).replace('<div class="cu-pb-ed">', pill + '<div class="cu-pb-ed">');
+  return CU.appDesktop({ w: 1920, h, sidebar: { user: USER, recents: RECENTS }, navbar: { download: true, upgrade: true },
+    homeHTML: CU.homeV2({ vh: h, vw: 1920, promptHTML: pb, prompt: { placeholder: 'Ask anything...' } }) });
+}
+const REPLY = `Here are 3 scroll-stopping hooks for @gymtok.daily:\n\n1. **"Your first leg day doesn't have to end in a wall-sit meltdown."**\n2. **"3 leg day moves every gym beginner gets wrong (and the 10-second fix)."**\n3. **"POV: day one, the squat rack is free and you have no idea what to do."**`;
+function chat(t) {
+  const n = clamp(Math.floor((t - (T_CHAT + 0.28)) * 250), 0, REPLY.length);
+  let part = REPLY.slice(0, n).replace(/(^|[^*])\*$/, '$1'); if ((part.match(/\*\*/g) || []).length % 2) part += '**';
+  const body = n > 0 ? CU.reply({ md: part }) : CU.thinkingRow('Cooking something up');
+  return CU.appDesktop({ w: 1920, h: 1080, sidebar: { user: USER, recents: ['Leg day hooks for TikTok', ...RECENTS], active: 0 }, navbar: { title: 'Leg day hooks for TikTok' },
+    chatHTML: CU.userBubble({ text: fillPrompt(V) }) + CU.turn(body), prompt: { placeholder: 'Ask anything...' } });
+}
+const wrap = (inner, h = 1080) => `<div style="position:relative;width:1920px;height:${h}px">${inner}</div>`;
+function html(t, extra = '') {
+  if (t >= T_CHAT) return wrap(chat(t) + extra);
+  if (t >= T_CLOSE) { const u = clamp((t - T_CLOSE) / 0.16); const sendDown = t >= T_SEND && t < T_SEND + 0.1;
+    let h = home('filled'); if (sendDown) h = h.replace('cu-pb-send"', 'cu-pb-send" style="transform:scale(.9)"');
+    return wrap(h + (u < 1 ? `<div style="position:absolute;inset:0;z-index:100;opacity:${1 - u}">${fillModal({ values: V })}</div>` : '') + extra); }
+  const st = fillState(t);
+  return wrap(home('empty') + `<div style="position:absolute;inset:0;z-index:100">${fillModal({ ...st, caret: Math.floor(t * 2.4) % 2 === 0 || !!st.active, addHover: t > 2.42, addDown: t >= T_ADD && t < T_ADD + 0.08 })}</div>` + extra);
+}
+let S, G = {};
+const box = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, l: r.left, t: r.top, w: r.width, h: r.height, b: r.bottom, r: r.right }; };
+window.ready = (async () => {
+  if (P.still) { const st = document.getElementById('stage'); st.style.width = '1920px'; st.style.height = '1200px';
+    st.innerHTML = wrap(home('empty', 1200) + `<div style="position:absolute;inset:0;z-index:100">${fillModal({ ...fillState(1.6), caret: true })}</div>`, 1200); await document.fonts.ready; return; }
+  S = stage(); await document.fonts.load('16px GS'); await document.fonts.ready; S.sharp.style.transform = 'none';
+  S.sharp.innerHTML = html(1.0); G.prev = box(S.sharp.querySelector('#modal .prev')); G.f = [...S.sharp.querySelectorAll('#modal .vf .in')].map(box); G.add = box(S.sharp.querySelector('#modal .mf .pri')); G.modal = box(S.sharp.querySelector('#modal'));
+  S.sharp.innerHTML = html(2.9); G.pb = box(S.sharp.querySelector('.cu-pb')); G.send = box(S.sharp.querySelector('.cu-pb-send'));
+  S.sharp.innerHTML = html(4.8); G.reply = box(S.sharp.querySelector('.cu-reply')); G.ub = box(S.sharp.querySelector('.cu-um'));
+})();
+window.render = t => {
+  if (P.still) return;
+  const fy = i => G.prev.y + (G.f[i].y - G.prev.y) * 0.32;
+  const K = [
+    [0, [1.95, G.prev.x, fy(0), 720, 520, 6, -0.6]],
+    [0.6, [2.0, G.prev.x, fy(0), 720, 520, 6, -0.6]],
+    [0.9, [2.0, G.prev.x + 10, fy(1), 716, 524, 6, -0.5]],
+    [1.5, [2.05, G.prev.x + 10, fy(2), 716, 524, 5.5, -0.5]],
+    [2.2, [2.08, G.prev.x + 20, fy(3), 712, 528, 5.5, -0.4]],
+    [2.5, [1.55, G.add.x - 200, G.add.y - 120, 760, 560, 6, -0.6]],
+    [2.62, [1.55, G.add.x - 200, G.add.y - 120, 760, 560, 6, -0.6]],
+    [2.85, [1.95, G.pb.x, G.pb.y, 720, 560, 6, -0.6]],
+    [3.25, [2.05, G.pb.x + 40, G.pb.y, 716, 560, 6, -0.5]],
+    [3.319, [2.06, G.pb.x + 42, G.pb.y, 716, 560, 6, -0.5]],
+    [3.32, [1.68, G.ub.r - 400, G.ub.t + 110, 720, 400, 5, -0.5]],
+    [4.8, [1.76, G.ub.r - 400, G.ub.t + 190, 716, 420, 5, -0.5]],
+  ];
+  const [s, ax, ay, sx, sy, ry, rz] = keys(K, t);
+  let cur = '';
+  if (t > 2.2 && t < T_CLOSE + 0.1) { const p = keys([[2.2, [G.add.x + 120, G.add.y + 160]], [2.48, [G.add.x + 4, G.add.y + 4]], [2.8, [G.add.x, G.add.y + 6]]], t); cur = cursor(p[0], p[1], t > 2.42 ? 'hand' : 'arrow'); }
+  else if (t >= T_CLOSE + 0.1 && t < T_CHAT) { const p = keys([[2.72, [G.send.x - 120, G.send.y + 120]], [3.12, [G.send.x + 2, G.send.y + 3]], [3.3, [G.send.x, G.send.y + 4]]], t); cur = cursor(p[0], p[1], t > 3.06 ? 'hand' : 'arrow'); }
+  S.frame(html(t, cur), { s, ax, ay, sx, sy, ry, rz, blur: 3.5 });
+};
+</script></body></html>

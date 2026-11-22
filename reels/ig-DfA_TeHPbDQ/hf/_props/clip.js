@@ -33,7 +33,7 @@
         if (it.buzz && f >= it.buzz.on && f < it.buzz.on + it.buzz.frames) { const k = f - it.buzz.on; const a = it.buzz.amp * (1 - k / it.buzz.frames * .5); ox += (k % 2 ? -a : a); orot += (k % 2 ? -1 : 1) * .9; }
         const draw = (G, dx, dy) => sticker(G, it, i, f, ox + dx, oy + dy, orot, osc);
         if (blur) X.mblur(g, blur, 12, draw); else draw(g, 0, 0);
-        if (it.anim === 'slap') { const fr = it.slap.from; let hx = null, hb = null;
+        if (it.anim === 'slap' && it.slap.hand) { const fr = it.slap.from; let hx = null, hb = null;
           if (d === -2) { hx = [fr[0], fr[1]]; hb = [-fr[0] * .5, -fr[1] * .5]; } else if (d === -1) { hx = [fr[0] * .3, fr[1] * .3]; hb = [-fr[0] * .35, -fr[1] * .35]; }
           else if (d >= 0 && d <= 2) hx = [0, 0]; else if (d === 3) { hx = [fr[0] * .45, fr[1] * .45]; hb = [fr[0] * .4, fr[1] * .4]; } else if (d === 4) { hx = [fr[0] * 1.1, fr[1] * 1.1]; hb = [fr[0] * .5, fr[1] * .5]; }
           if (hx) { const dh = (G, dx, dy) => hand(G, it, f, hx[0] + dx, hx[1] + dy); if (hb) X.mblur(g, hb, 12, dh); else dh(g, 0, 0); } }
