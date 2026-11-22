@@ -1,0 +1,281 @@
+[
+ {
+  "n": 1,
+  "kind": "L",
+  "start": 0.0,
+  "end": 1.633,
+  "vo": "This is my co-worker Faseeh.",
+  "shot": "L01 both, low angle outside",
+  "note": "word pops"
+ },
+ {
+  "n": 2,
+  "kind": "L",
+  "start": 1.633,
+  "end": 3.133,
+  "vo": "...We both work at Chatly",
+  "shot": "L02 Faseeh at bench",
+  "note": "FASEEH name sticker (P-21)"
+ },
+ {
+  "n": 3,
+  "kind": "L",
+  "start": 3.133,
+  "end": 4.0,
+  "vo": "...and I'm trying to",
+  "shot": "L03 Faseeh in bushes",
+  "note": "word pops"
+ },
+ {
+  "n": 4,
+  "kind": "L",
+  "start": 4.0,
+  "end": 4.967,
+  "vo": "...save his job.",
+  "shot": "L04 helmet, arms up",
+  "note": "word pops"
+ },
+ {
+  "n": 5,
+  "kind": "L",
+  "start": 4.967,
+  "end": 7.1,
+  "vo": "Faseeh, where's the 9am post?",
+  "shot": "L05 teammate on Meet",
+  "note": "\"where's the 9am post??\" card (P-24b)"
+ },
+ {
+  "n": 6,
+  "kind": "L",
+  "start": 7.1,
+  "end": 8.233,
+  "vo": "Is it 9am?",
+  "shot": "L06 Faseeh on Meet",
+  "note": ""
+ },
+ {
+  "n": 7,
+  "kind": "L",
+  "start": 8.233,
+  "end": 10.033,
+  "vo": "In San Francisco.",
+  "shot": "L07 teammate on Meet",
+  "note": "sticker -> \"in SAN FRANCISCO\" (P-24c, was New York)"
+ },
+ {
+  "n": 8,
+  "kind": "L",
+  "start": 10.033,
+  "end": 12.0,
+  "vo": "What the f***?  (PROFANITY)",
+  "shot": "L08 Faseeh facepalm on Meet",
+  "note": "bleep or swap audio"
+ },
+ {
+  "n": 9,
+  "kind": "G",
+  "start": 12.0,
+  "end": 16.25,
+  "vo": "Every morning, Faseeh has to post...",
+  "shot": "globe -> map, NY! (seg1923)",
+  "note": "black gap 12.0-19.0"
+ },
+ {
+  "n": 10,
+  "kind": "G",
+  "start": 16.25,
+  "end": 19.0,
+  "vo": "...New York, London and SF at the same time",
+  "shot": "map circles (P-25)",
+  "note": ""
+ },
+ {
+  "n": 11,
+  "kind": "L",
+  "start": 18.967,
+  "end": 20.633,
+  "vo": "Faseeh has an impossible task.",
+  "shot": "L09 FEEDER ACCOUNTS sign, field",
+  "note": "\"impossible task\" pop"
+ },
+ {
+  "n": 12,
+  "kind": "L",
+  "start": 20.633,
+  "end": 23.667,
+  "vo": "He runs dozens of feeder accounts.",
+  "shot": "L10 scroll whip -> POSTING TIMES sign",
+  "note": ""
+ },
+ {
+  "n": 13,
+  "kind": "L",
+  "start": 23.667,
+  "end": 25.2,
+  "vo": "Every one has its own niche,",
+  "shot": "L11 at monitor, \"45\" note",
+  "note": ""
+ },
+ {
+  "n": 14,
+  "kind": "L",
+  "start": 25.2,
+  "end": 26.467,
+  "vo": "...its own voice",
+  "shot": "L12 bean bag, laptop",
+  "note": ""
+ },
+ {
+  "n": 15,
+  "kind": "L",
+  "start": 26.467,
+  "end": 28.1,
+  "vo": "...and its own time zone.",
+  "shot": "L13 typing, over shoulder",
+  "note": ""
+ },
+ {
+  "n": 16,
+  "kind": "G",
+  "start": 28.1,
+  "end": 29.6,
+  "vo": "3 posts a day...",
+  "shot": "calculator (P-27, must read 360)",
+  "note": "black gap 28.1-34.0"
+ },
+ {
+  "n": 17,
+  "kind": "N",
+  "start": 29.6,
+  "end": 34.0,
+  "vo": "...hooks, captions, hashtags. 360 posts a week.",
+  "shot": "TO BUILD: hooks/captions/hashtags + \"360/week\"",
+  "note": "code, free"
+ },
+ {
+  "n": 18,
+  "kind": "L",
+  "start": 34.0,
+  "end": 35.8,
+  "vo": "What the hell?",
+  "shot": "L14 facepalm on laptop Meet",
+  "note": "\"what the hell?\" word pop"
+ },
+ {
+  "n": 19,
+  "kind": "N",
+  "start": 35.8,
+  "end": 39.3,
+  "vo": "And he's not the only one...",
+  "shot": "P-14 window: NEEDS 3-4 clips of other people",
+  "note": "black gap 35.8-62.5"
+ },
+ {
+  "n": 20,
+  "kind": "G",
+  "start": 39.3,
+  "end": 42.0,
+  "vo": "A notes app full of prompts...",
+  "shot": "Notes app (P-12)",
+  "note": ""
+ },
+ {
+  "n": 21,
+  "kind": "G",
+  "start": 42.0,
+  "end": 45.4,
+  "vo": "...copy, paste, rewrite 30 times a day",
+  "shot": "Google Doc (P-13)",
+  "note": ""
+ },
+ {
+  "n": 22,
+  "kind": "G",
+  "start": 45.4,
+  "end": 47.4,
+  "vo": "Let's just say, it doesn't scale.",
+  "shot": "Upload failed (P-11)",
+  "note": ""
+ },
+ {
+  "n": 23,
+  "kind": "G",
+  "start": 47.4,
+  "end": 52.5,
+  "vo": "So I showed him the prompt library...",
+  "shot": "Prompt Library save (P-01)",
+  "note": ""
+ },
+ {
+  "n": 24,
+  "kind": "G",
+  "start": 52.5,
+  "end": 54.9,
+  "vo": "Type @ in any chat...",
+  "shot": "@ sticker + @hook menu (P-30, P-02)",
+  "note": ""
+ },
+ {
+  "n": 25,
+  "kind": "G",
+  "start": 54.9,
+  "end": 59.1,
+  "vo": "Fill in the account, the niche...",
+  "shot": "Fill in the blanks (P-03)",
+  "note": ""
+ },
+ {
+  "n": 26,
+  "kind": "G",
+  "start": 59.1,
+  "end": 62.467,
+  "vo": "...the whole team gets it.",
+  "shot": "Who can use it -> Everyone (P-04)",
+  "note": ""
+ },
+ {
+  "n": 27,
+  "kind": "L",
+  "start": 62.467,
+  "end": 65.533,
+  "vo": "Faseeh doesn't rewrite the same prompt...",
+  "shot": "L15 dancing on Meet",
+  "note": ""
+ },
+ {
+  "n": 28,
+  "kind": "G",
+  "start": 65.533,
+  "end": 68.833,
+  "vo": "So if you're running 10 accounts or 50,",
+  "shot": "scroll ticks (P-28) + \"10 or 50\"",
+  "note": "black gap 65.5-68.8"
+ },
+ {
+  "n": 29,
+  "kind": "L",
+  "start": 68.833,
+  "end": 72.1,
+  "vo": "comment PROMPTS and I'll send you...",
+  "shot": "L16 both at desk",
+  "note": "\"Comment PROMPTS\" pops"
+ },
+ {
+  "n": 30,
+  "kind": "G",
+  "start": 72.1,
+  "end": 73.35,
+  "vo": "(end card)",
+  "shot": "a Chatly story (P-05)",
+  "note": ""
+ },
+ {
+  "n": 31,
+  "kind": "G",
+  "start": 73.35,
+  "end": 78.35,
+  "vo": "Chatly. AI that works 24/7 for you.",
+  "shot": "official outro 4:3",
+  "note": ""
+ }
+]

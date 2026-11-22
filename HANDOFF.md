@@ -195,3 +195,7 @@ Graphics built so far, all in `hf/P-XX-*/out/` with timings in each `index.html`
 - San Francisco vs. the +5 sticker.
 - The @studyhacks.pk handle.
 - Whether heart + mark on the end card reads as doubled.
+
+### 2026-11-22 night: 1122 rough cut received
+- The owner's rough cut is `1122.mov` + `1122.WAV`: the full 72 s VO with 16 live shots and black gaps for graphics. The raw footage stays local (`faseeh/footage/`, not in git).
+- The storyboard with planned graphics is in `reels/ig-DfA_TeHPbDQ/faseeh/storyboard/`: `STORYBOARD-1122.jpg`, `frames/`, `storyboard-1122.json` and `REVIEW-1122.md` (must-fix list: profanity at 10.2 s, 360/week numbers, NY→SF sticker, missing P-14 plates).
