@@ -1,0 +1,74 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: 'GS'; src: url('../_linkup/fonts/gsflex.ttf') format('truetype'); font-weight: 100 1000; }
+html, body { margin:0; background:#fff; }
+#stage { position:relative; width:1440px; height:1080px; overflow:hidden; background:#fff; }
+.cam { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 0; }
+#blur { filter: blur(5px); }
+#sharp { -webkit-mask-image: radial-gradient(ellipse 46% 50% at var(--fx,50%) var(--fy,50%), #000 55%, transparent 100%); }
+.cur { position:absolute; width:0; height:0; z-index:9; }
+.cur svg { position:absolute; left:0; top:0; overflow:visible; }
+</style>
+<link rel="stylesheet" href="../../../../reference/chatly-ui-kit/chatly-ui.css">
+</head><body>
+<div id="stage"><div class="cam" id="blur"></div><div class="cam" id="sharp"></div><div class="cur" id="cur"></div></div>
+<script type="module">
+// HF-18: shot 38, ref 46.13-47.96 (t=0 at 46.13). Real Chatly home V2; the ask is typed into the composer; cursor clicks send at 47.50.
+// PARAMS.still = 1 -> empty-composer home for the shot-37 / Y5 in-camera screen ref (see out/ still).
+import CU from '../../../../reference/chatly-ui-kit/chatly-ui.js';
+const T0 = 46.13, P = window.PARAMS || {};
+const ASK = 'lets build a tool that can generate meeting times instantly'; // verbatim from the reference ("lets", no apostrophe)
+// visible characters over time (ref frames at 10 fps; jump cut at 46.70)
+const TK = [[46.13, 1], [46.165, 2], [46.21, 3], [46.25, 4], [46.39, 4], [46.40, 5], [46.49, 5], [46.5, 6], [46.6, 7], [46.62, 8], [46.66, 8], [46.7, 47], [46.75, 48], [46.86, 49], [46.96, 50], [47.03, 51], [47.08, 52], [47.12, 53], [47.2, 54], [47.45, 59]];
+const nAt = a => { if (a <= TK[0][0]) return TK[0][1]; for (let i = 0; i < TK.length - 1; i++) { const [t0, n0] = TK[i], [t1, n1] = TK[i + 1]; if (a < t1) return n0 + Math.floor((n1 - n0) * (a - t0) / (t1 - t0)); } return TK[TK.length - 1][1]; };
+const app = (text, still) => CU.appDesktop({ w: 1920, h: still ? 1200 : 1080, sidebar: { recents: CU.DEFAULT_RECENTS, user: { name: 'Ying', plan: 'Ultra Plan', avatar: '' } }, navbar: { download: true, upgrade: true },
+  homeHTML: CU.homeV2({ vh: still ? 1200 : 1080, vw: 1920, prompt: text ? { text, caret: true, state: 'typing' } : { placeholder: 'Ask anything...' } }) });
+const A = { sharp: document.getElementById('sharp'), blur: document.getElementById('blur') };
+const ARROW = `<svg width="34" height="48" viewBox="0 0 17 24"><path d="M1 1 L1 18.5 L5.2 14.6 L8 21.3 L10.9 20.1 L8.1 13.5 L13.8 13.5 Z" fill="#111" stroke="#fff" stroke-width="1.3" stroke-linejoin="round"/></svg>`;
+const HAND = `<svg width="40" height="46" viewBox="0 0 20 23" style="left:-12px;top:-2px"><path d="M7.2 1.2c.9 0 1.6.7 1.6 1.6v6.3l.4-.1V7.6c0-.9.7-1.5 1.5-1.5s1.5.6 1.5 1.5v1.5l.4-.1c0-.8.7-1.4 1.5-1.4s1.5.6 1.5 1.5v1.3l.3-.1c.1-.7.7-1.1 1.4-1.1.8 0 1.4.6 1.4 1.4v5.6c0 3.4-2.4 6-5.8 6h-1.6c-2 0-3.4-.8-4.6-2.4L2 13.8c-.5-.7-.3-1.6.4-2 .6-.4 1.4-.3 1.9.2l1.3 1.4V2.8c0-.9.7-1.6 1.6-1.6z" fill="#fff" stroke="#111" stroke-width="1.1" stroke-linejoin="round"/><path d="M8.8 9v4.6M11.7 9.2v4.4M14.6 10.2v3.6" stroke="#111" stroke-width=".9" stroke-linecap="round"/></svg>`;
+const lerp = (a, b, u) => a + (b - a) * u, sm = u => u * u * (3 - 2 * u), clamp = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
+const keys = (K, t) => { if (t <= K[0][0]) return K[0][1]; for (let i = 0; i < K.length - 1; i++) if (t <= K[i + 1][0]) { const u = sm((t - K[i][0]) / (K[i + 1][0] - K[i][0])); return K[i][1].map((v, j) => lerp(v, K[i + 1][1][j], u)); } return K[K.length - 1][1]; };
+let G = null; // app-space geometry, measured once
+function measure() {
+  A.sharp.innerHTML = app(ASK, false); A.sharp.style.transform = 'none';
+  const r = e => e.getBoundingClientRect(), q = s => A.sharp.querySelector(s);
+  const pb = r(q('.cu-pb')), send = r(q('.cu-pb-send')), txt = r(q('.cu-pb-txt'));
+  G = { pb, send: [send.left + send.width / 2, send.top + send.height / 2], txt: [txt.left + 8, txt.top + 16] };
+}
+// camera: app point (ax,ay) -> screen (sx,sy) at scale s, rotation rz (deg), plus perspective tilt
+function camera(t, a) {
+  let s, ax, ay, sx, sy, rz, ry;
+  if (a < 46.68) { // A: tight on the composer's left end, text near its start
+    const u = (a - T0) / 0.55; s = 4.05 + 0.15 * u; ax = G.pb.left; ay = G.pb.top; sx = 585 - 95 * u; sy = 412 - 2 * u; rz = 0; ry = 4;
+  } else if (a < 47.18) { // B: wider, camera follows the caret (text scrolls)
+    const u = (a - 46.7) / 0.48; s = 3.55 + 0.08 * u; ax = G.caretX; ay = G.txt[1]; sx = 893 + 6 * u; sy = 528 + 4 * u; rz = 0; ry = 3;
+  } else { // C: bottom-right of the composer, send button
+    const u = (a - 47.2) / 0.76; s = 2.95 + 0.06 * u; ax = G.send[0]; ay = G.send[1]; sx = 762 - 6 * u; sy = 556 + 3 * u; rz = -2.6; ry = 6;
+  }
+  return { s, ax, ay, sx, sy, rz, ry };
+}
+function caretX() { const c = A.sharp.querySelector('.cu-caret'); A.sharp.style.transform = 'none'; const r = c.getBoundingClientRect(); return r.left; }
+window.ready = (async () => { await document.fonts.load('16px GS'); await document.fonts.ready;
+  if (P.still) { const s = document.getElementById('stage'); s.style.width = '1920px'; s.style.height = '1200px'; A.blur.remove(); A.sharp.style.webkitMaskImage = 'none'; A.sharp.style.height = '1200px'; A.sharp.innerHTML = app('', true); return; }
+  measure(); })();
+window.render = t => {
+  if (P.still) return;
+  const a = T0 + t, n = nAt(a), text = ASK.slice(0, n);
+  const html = app(text, false); A.sharp.innerHTML = html; A.blur.innerHTML = html;
+  G.caretX = caretX();
+  const c = camera(t, a);
+  const tf = `translate(${c.sx}px,${c.sy}px) perspective(2400px) rotateY(${c.ry}deg) rotateZ(${c.rz}deg) scale(${c.s}) translate(${-c.ax}px,${-c.ay}px)`;
+  A.sharp.style.transform = tf; A.blur.style.transform = tf;
+  A.sharp.style.setProperty('--fx', (c.ax / 19.2) + '%'); A.sharp.style.setProperty('--fy', (c.ay / 10.8) + '%');
+  // send press at 47.50 (3 frames)
+  const pf = (a - 47.5) * 24; const sb = A.sharp.querySelector('.cu-pb-send'), bb = A.blur.querySelector('.cu-pb-send');
+  if (pf >= 0 && pf < 3) for (const e of [sb, bb]) e.style.transform = 'scale(.9)';
+  // cursor (only in C)
+  const cur = document.getElementById('cur');
+  if (a >= 47.18) {
+    const K = [[47.2, [800, 905]], [47.3, [810, 862]], [47.4, [806, 790]], [47.47, [768, 600]], [47.5, [762, 580]], [47.96, [758, 584]]];
+    const [x, y] = keys(K, a); const kind = a >= 47.46 ? 'hand' : 'arrow'; cur.style.display = ''; cur.style.left = x + 'px'; cur.style.top = y + 'px'; cur.style.transform = 'scale(1.35)';
+    cur.innerHTML = kind === 'hand' ? HAND : ARROW;
+  } else cur.style.display = 'none';
+};
+</script></body></html>

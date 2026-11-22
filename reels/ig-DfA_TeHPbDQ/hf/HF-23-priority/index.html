@@ -1,0 +1,54 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../_linkup/linkup.css">
+<style>
+#cam { position:absolute; inset:0; transform-origin: 700px 540px; }
+#bg { position:absolute; left:-100px; top:-100px; width:1700px; height:1300px; background:#EFEBE1; }
+#panel { position:absolute; left:78px; top:-60px; width:1254px; height:1300px; background:#F7F4EC; border-left:2px solid #DDD7CA; border-right:2px solid #DDD7CA; }
+.pk { position:absolute; top:-60px; width:3px; height:1300px; background:#E39AB0; }
+.ab { position:absolute; }
+.lbl { font-size:35px; color:#2D2B27; }
+.inp { position:absolute; left:146px; width:1122px; height:90px; border-radius:45px; background:#FBF9F4; border:1.5px solid #E7E2D7; box-sizing:border-box; display:flex; align-items:center; padding-left:32px; font-size:36px; color:#2D2B27; }
+.opt { position:absolute; top:430px; height:200px; border-radius:62px; background:#FAF8F2; border:1.5px solid #E7E2D7; box-sizing:border-box; text-align:center; }
+.opt .d { width:26px; height:26px; border-radius:50%; margin:34px auto 0; }
+.opt .t { font-size:36px; margin-top:12px; color:#2D2B27; font-weight:500; }
+.opt .s { font-size:29.5px; color:#7E7A70; margin-top:4px; }
+.opt.sel { border:4.5px solid #D9708E; }
+.sm { position:absolute; top:1035px; height:90px; border-radius:30px; background:#FBF9F4; border:1.5px solid #E7E2D7; box-sizing:border-box; padding:22px 28px; font-size:31px; }
+</style></head><body>
+<div id="stage" class="lu"><div id="cam">
+  <div id="bg"></div>
+  <div id="panel"></div>
+  <div class="pk" style="left:1357px"></div><div class="pk" style="left:1377px"></div>
+  <div class="ab lu-ph" style="left:150px;top:-160px;width:300px;height:190px;border-radius:0 0 60px 60px;background-image:url('../_linkup/img/f2-eastasian-mid30s.jpg');background-position:center 40%"></div>
+  <div class="ab" style="left:180px;top:74px;display:flex;align-items:center;gap:14px;font-size:31px;color:#2D2B27">
+    <svg width="32" height="34" viewBox="0 0 24 26" fill="none" stroke="#2D2B27" stroke-width="1.7" stroke-linecap="round"><path d="M3 6h18M9 6V3.5h6V6M5.5 6l1.2 16.5h10.6L18.5 6M10 10.5v8M14 10.5v8"/></svg>Remove</div>
+  <div class="ab lbl" style="left:146px;top:186px">What I'm working on</div>
+  <div class="inp" style="top:236px">Working on the next banger</div>
+  <div class="ab lbl" style="left:146px;top:378px">Priority</div>
+  <div class="opt" id="o0" style="left:147px;width:359px"><div class="d" style="background:#3CC85A"></div><div class="t">Green</div><div class="s">(always available)</div></div>
+  <div class="opt" id="o1" style="left:525px;width:365px"><div class="d" style="background:#D4A83A"></div><div class="t">Yellow</div><div class="s">(maybe?)</div></div>
+  <div class="opt" id="o2" style="left:910px;width:358px"><div class="d" style="background:#C8102E"></div><div class="t">Red</div><div class="s">(leave me alone!)</div></div>
+  <div class="ab lbl" style="left:147px;top:686px">Time zone</div>
+  <div class="inp" style="top:735px;color:#8E8A80">Search — try Canada, Calgary, Switzerland...</div>
+  <div class="inp" style="top:843px;border-radius:14px;background:#EFEBE2;padding-left:24px">Asia/Singapore
+    <svg style="position:absolute;right:26px" width="20" height="30" viewBox="0 0 14 22" fill="none" stroke="#2D2B27" stroke-width="1.8" stroke-linecap="round" stroke-linejoin="round"><path d="M3 8l4-4 4 4M3 14l4 4 4-4"/></svg></div>
+  <div class="ab lbl" style="left:147px;top:985px">Available from</div>
+  <div class="ab lbl" style="left:728px;top:985px">until</div>
+  <div class="sm" style="left:147px;width:543px">8:00<svg style="position:absolute;right:26px;top:34px" width="20" height="14" viewBox="0 0 14 10" fill="none" stroke="#2D2B27" stroke-width="1.8" stroke-linecap="round"><path d="M2 8l5-5 5 5"/></svg></div>
+  <div class="sm" style="left:725px;width:543px">22:00<svg style="position:absolute;right:26px;top:34px" width="20" height="14" viewBox="0 0 14 10" fill="none" stroke="#2D2B27" stroke-width="1.8" stroke-linecap="round"><path d="M2 8l5-5 5 5"/></svg></div>
+</div></div>
+<script src="../lib/kit.js"></script><script src="../_linkup/linkup.js"></script>
+<script>
+// HF-23: shot 43, ref 56.50-57.96 (t=0 at 56.50). Green selected, click Yellow at 57.00, drift toward Red.
+const T0 = 56.50, $ = s => document.querySelector(s), cur = LU.cursorEl($('#stage'));
+const CK = [[56.5, [450, 384]], [56.7, [450, 368]], [56.9, [455, 346]], [57.0, [452, 352]], [57.2, [451, 356]], [57.4, [455, 352]], [57.5, [508, 462]], [57.6, [519, 472]], [57.7, [600, 386]], [57.8, [622, 371]], [57.96, [632, 368]]]
+  .map(([a, [x, y]]) => [a - T0, [x * 1.5, y * 1.5]]);
+window.ready = (async () => { await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {}))); })();
+window.render = t => {
+  const sel = T0 + t >= 57.0 - 1e-6 ? 1 : 0;
+  for (let i = 0; i < 3; i++) $('#o' + i).classList.toggle('sel', i === sel);
+  const press = t >= 0.46 && t < 0.54; $('#o1').style.transform = press ? 'scale(.985)' : '';
+  $('#cam').style.transform = `translate(${Math.sin(t * 1.7) * 3}px,${Math.cos(t * 1.3) * 2}px)`;
+  const [x, y] = LU.lerpKeys(CK, t, LU.smooth); cur.set(x, y, "arrow", 1.12);
+};
+</script></body></html>

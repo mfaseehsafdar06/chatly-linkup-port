@@ -29,7 +29,7 @@
     },
     async guideAt(t) {
       if (!P.guide || !img) return;
-      img.src = `qa/guide/g${CM.pad(Math.round(t * 24))}.jpg`;
+      img.src = `${P.guideDir || 'qa/guide'}/g${CM.pad(Math.round(t * 24))}.jpg`;
       try { await img.decode(); } catch (e) { }
     },
     // in guide mode, punch holes at reduced opacity so the ref shows through the UI too (alignment check)

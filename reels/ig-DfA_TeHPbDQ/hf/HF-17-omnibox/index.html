@@ -1,0 +1,105 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="../HF-07-meet/common.js"></script><script src="../HF-07-meet/chatly-mark.js"></script>
+<style>
+  #bok{position:absolute;left:0;top:0;width:1440px;height:240px;overflow:hidden;background:#24261f}
+  #bok i{position:absolute;border-radius:50%;filter:blur(38px)}
+  #scr{position:absolute;left:0;top:0;width:1440px;height:1080px;font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;color:#1f1f1f}
+  .menu{position:absolute;left:0;top:222px;width:1440px;height:160px;background:#060606}
+  .mi{position:absolute;top:336px;transform:translateY(-50%);font-size:31px;color:#f2f2f2;font-weight:500;white-space:nowrap}
+  .strip{position:absolute;left:0;top:381px;width:1440px;height:110px;background:#dde1e5}
+  .tab{position:absolute;left:330px;top:400px;width:622px;height:91px;background:#f1f3f5;border-radius:18px 18px 0 0}
+  .tl{position:absolute;top:434px;width:37px;height:37px;border-radius:50%;transform:translate(-50%,-50%)}
+  .tbar{position:absolute;left:0;top:491px;width:1440px;height:589px;background:#f1f3f5}
+  
+  .drop{position:absolute;left:296px;top:612px;width:1200px;height:470px;background:#f6f7f9;border-left:2px solid #dfe2e6}
+  .lpan{position:absolute;left:0;top:612px;width:296px;height:470px;background:#eceef1}
+  .row{position:absolute;left:150px;transform:translateY(-50%);font-size:37px;white-space:nowrap;letter-spacing:.9px}
+  .ric{position:absolute;left:66px;transform:translate(-50%,-50%)}
+  .hl{background:#bcd3f5}
+  .g{color:#5f6368}
+  .url{color:#1a5fb4}
+  b{font-weight:650}
+</style>
+</head><body><div id="stage">
+<div id="bok"></div><div id="scr"></div></div>
+<script>
+// HF-17 · Chrome omnibox typing "chatly" -> chatlyai.app (shot 36, ref 44.458–45.250, f1067–f1086, 19 frames). Full-frame mp4.
+// Typing schedule copied frame-for-frame from the ref (l, lo, lov, lova, lovab, lovabl, lovable -> c, ch, cha, chat, chatl, chatly).
+// Brand swaps: Lovable favicon/URL/suggestions -> Chatly mark (kit LogoIcon) + chatlyai.app. No subtitle ("So I decided" is HF-02).
+CM.initGuide();
+const scr = document.getElementById('scr');
+let MARK = '';
+const STATE = [ // [fromFrame, typed, rows]  rows: array of {ic, html}
+  [0, 'c', null],
+  [1, 'c', 'A'], [2, 'ch', 'A'], [3, 'ch', 'B'], [8, 'cha', 'B'], [9, 'cha', 'C'], [11, 'chat', 'C'], [12, 'chat', 'D'], [13, 'chatl', 'C'],
+  [15, 'chatly', 'C'], [17, 'chatly', 'E'],
+];
+const FULL = 'chatlyai.app';
+const ICS = {
+  search: '<svg width="38" height="38" viewBox="0 0 24 24"><path fill="#474747" d="M15.5 14h-.79l-.28-.27A6.47 6.47 0 0016 9.5 6.5 6.5 0 109.5 16c1.61 0 3.09-.59 4.23-1.57l.27.28v.79l5 4.99L20.49 19l-4.99-5zm-6 0C7.01 14 5 11.99 5 9.5S7.01 5 9.5 5 14 7.01 14 9.5 11.99 14 9.5 14z"/></svg>',
+  hist: '<svg width="36" height="36" viewBox="0 0 24 24"><path fill="#474747" d="M13 3a9 9 0 00-9 9H1l3.89 3.89.07.14L9 12H6c0-3.87 3.13-7 7-7s7 3.13 7 7-3.13 7-7 7c-1.93 0-3.68-.79-4.94-2.06l-1.42 1.42A8.954 8.954 0 0013 21a9 9 0 000-18zm-1 5v5l4.28 2.54.72-1.21-3.5-2.08V8H12z"/></svg>',
+};
+function rows(set, typed) {
+  const sel = { ic: 'mark', html: `<b>Chatly</b> <span class="g">&nbsp;-&nbsp;</span> <span class="url"><b>${typed}</b>${FULL.slice(typed.length)}</span>` };
+  const gs = (q) => ({ ic: 'search', html: `${q} <span class="g">&nbsp;-&nbsp; Google Search</span>` });
+  const bo = (q) => q.startsWith(typed) ? `${typed}<b>${q.slice(typed.length)}</b>` : `<b>${q}</b>`;
+  const h = (q) => ({ ic: 'hist', html: bo(q) });
+  const co = { ic: 'search', html: `Chatly <span class="g">&nbsp;-&nbsp; Company</span>` };
+  if (set === 'A') return [sel, gs(typed), h('chatly ai'), h('cv template')];
+  if (set === 'B') return [sel, gs(typed), h('chatly ai'), h('cheap flights')];
+  if (set === 'C') return [sel, gs(typed), h('chatly ai'), h('chatlyai.app')];
+  if (set === 'D') return [sel, co, gs(typed), h('chatly ai')];
+  if (set === 'E') return [sel, co, { ic: 'hist', html: `${bo('chatly ai')} <span class="g">&nbsp;-&nbsp; Google Search</span>` }, h('chatlyai.app')];
+  return [];
+}
+function chrome(typed, set, k) {
+  const menu = [['<svg width="34" height="40" viewBox="0 0 17 20" style="display:block"><path fill="#f2f2f2" d="M14.1 10.6c0-2.6 2.1-3.8 2.2-3.9-1.2-1.8-3.1-2-3.7-2-1.6-.2-3.1.9-3.9.9-.8 0-2-.9-3.4-.9C3.6 4.8 2 5.8 1.1 7.4c-1.8 3.2-.5 7.9 1.3 10.4.9 1.3 1.9 2.7 3.2 2.6 1.3-.1 1.8-.8 3.4-.8 1.6 0 2 .8 3.4.8 1.4 0 2.3-1.3 3.1-2.6 1-1.4 1.4-2.8 1.4-2.9-.1 0-2.8-1-2.8-4.3zM11.6 3c.7-.9 1.2-2 1-3.2-1 0-2.3.7-3 1.6-.7.8-1.2 2-1.1 3.1 1.2.1 2.3-.6 3.1-1.5z"/></svg>', 48], ['Chrome', 137, 700], ['File', 327], ['Edit', 440], ['View', 557], ['History', 692], ['Bookmarks', 864], ['Profiles', 1101], ['Tab', 1280], ['Window', 1393]];
+  let h = `<div class="menu"></div>` + menu.map(([s, x, w]) => `<div class="mi" style="left:${x}px;${w ? 'font-weight:' + w : ''}">${s}</div>`).join('');
+  h += `<div class="strip"></div><div class="tab"></div>`;
+  h += [[45, '#ee5d55'], [107, '#c9cdd2'], [168, '#5fc650']].map(([x, c]) => `<div class="tl" style="left:${x}px;background:${c}"></div>`).join('');
+  h += `<div class="abs" style="left:259px;top:418px"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M7.41 8.59L12 13.17l4.59-4.58L18 10l-6 6-6-6z" fill="#1f1f1f"/></svg></div>`;
+  // chrome logo (generic grey wheel, "New Tab" favicon)
+  h += `<div class="abs" style="left:353px;top:418px"><svg width="36" height="36" viewBox="0 0 24 24"><circle cx="12" cy="12" r="10" fill="none" stroke="#5f6368" stroke-width="2"/><circle cx="12" cy="12" r="4" fill="none" stroke="#5f6368" stroke-width="2"/><path d="M12 8h9M8.5 14 4 6.5M15.5 14 11 21.5" stroke="#5f6368" stroke-width="2"/></svg></div>`;
+  h += `<div class="abs" style="left:415px;top:438px;transform:translateY(-50%);font-size:30px">New Tab</div>`;
+  h += `<div class="abs" style="left:892px;top:422px"><svg width="32" height="32" viewBox="0 0 24 24"><path d="M19 6.41L17.59 5 12 10.59 6.41 5 5 6.41 10.59 12 5 17.59 6.41 19 12 13.41 17.59 19 19 17.59 13.41 12z" fill="#1f1f1f"/></svg></div>`;
+  h += `<div class="abs" style="left:988px;top:420px"><svg width="36" height="36" viewBox="0 0 24 24"><path d="M19 13h-6v6h-2v-6H5v-2h6V5h2v6h6v2z" fill="#3c4043"/></svg></div>`;
+  h += `<div class="tbar"></div>`;
+  const nav = (x, d, c) => `<div class="abs" style="left:${x - 18}px;top:532px"><svg width="36" height="36" viewBox="0 0 24 24"><path d="${d}" fill="${c}"/></svg></div>`;
+  h += nav(52, 'M20 11H7.83l5.59-5.59L12 4l-8 8 8 8 1.41-1.41L7.83 13H20v-2z', '#b9bcc0') + nav(147, 'M12 4l-1.41 1.41L16.17 11H4v2h12.17l-5.58 5.59L12 20l8-8z', '#b9bcc0') + nav(244, 'M17.65 6.35A7.958 7.958 0 0012 4c-4.42 0-7.99 3.58-7.99 8s3.57 8 7.99 8c3.73 0 6.84-2.55 7.73-6h-2.08A5.99 5.99 0 0112 18c-3.31 0-6-2.69-6-6s2.69-6 6-6c1.66 0 3.14.69 4.22 1.78L13 11h7V4l-2.35 2.35z', '#474747');
+  // omnibox
+  h += `<div class="abs" style="left:358px;top:532px;width:40px;height:40px">${MARK}</div>`;
+  h += `<div class="abs" style="left:450px;top:552px;transform:translateY(-50%);font-size:38px;white-space:nowrap;letter-spacing:1.1px">${typed}<span class="hl">${FULL.slice(typed.length)}</span></div>`;
+  if (set) {
+    h += `<div class="lpan"></div><div class="drop"></div>`;
+    h += `<div class="abs" style="left:297px;top:612px;width:9px;height:104px;border-radius:0 5px 5px 0;background:#3c63c8"></div>`;
+    rows(set, typed).forEach((r, i) => {
+      const y = 666 + i * 108.5;
+      const ic = r.ic === 'mark' ? `<div style="width:40px;height:40px">${MARK}</div>` : ICS[r.ic];
+      h += `<div class="abs" style="left:296px;top:0;width:0;height:0"><div class="ric" style="top:${y}px;left:82px">${ic}</div><div class="row" style="top:${y}px;left:150px">${r.html}</div></div>`;
+    });
+  }
+  // pointer cursor near the URL
+  h += `<div class="abs" style="left:838px;top:604px"><svg width="34" height="46" viewBox="0 0 17 23"><path d="M1 1v18l4.5-4.3 3 6.8 3-1.3-3-6.6H15z" fill="#000" stroke="#fff" stroke-width="1.2"/></svg></div>`;
+  return h;
+}
+function bokeh() {
+  const b = document.getElementById('bok');
+  const blobs = [[60, 90, 40, 180, '#8a1c22', .9], [250, 120, 260, 150, '#2e5a3a', .9], [520, 60, 220, 160, '#3f6b45', .7], [880, 40, 330, 240, '#9b1a2a', .95],
+    [1180, 120, 300, 200, '#b0202f', .9], [700, 170, 200, 120, '#4b4a3a', .7], [1330, 30, 150, 130, '#c33a45', .8]];
+  b.innerHTML = blobs.map(([x, y, w, h, c, o]) => `<i style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;background:${c};opacity:${o}"></i>`).join('');
+}
+window.ready = (async () => {
+  const svg = window.CHATLY_MARK;
+  MARK = `<div style="width:40px;height:40px;border-radius:9px;background:#111;display:flex;align-items:center;justify-content:center">${svg.replace('width="375" height="411"', 'width="22" height="24"').replace(/fill="#000"/g, 'fill="#fff"')}</div>`;
+  bokeh(); document.getElementById('stage').style.opacity = CM.guideOpacity();
+})();
+window.render = async t => {
+  await CM.guideAt(t);
+  const k = Math.round(t * 24); let typed = 'c', set = null;
+  for (const [f, ty, s] of STATE) if (k >= f) { typed = ty; set = s; }
+  scr.innerHTML = chrome(typed, set, k);
+  // slight handheld drift + depth-of-field falloff towards the bottom
+  const dx = Math.sin(t * 2.1) * 3, dy = Math.cos(t * 1.7) * 2;
+  scr.style.transform = `translate(${dx}px,${dy}px)`; scr.style.filter = 'blur(0.6px)';
+};
+</script></body></html>

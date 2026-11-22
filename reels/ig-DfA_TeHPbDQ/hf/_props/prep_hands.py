@@ -21,3 +21,7 @@ for i in range(3):
     out[f'H{i}']={'orig':[W,H],'crop':[int(x0),int(y0),int(x1),int(y1)]}
     print(i,o.shape,(x0,y0,x1,y1))
 json.dump(out,open('hands/hands.json','w'),indent=1)
+# H2 cleanup: remove the beige card sliver at the top-left of the arm (left 260 px, top 150 px of H2)
+im=cv2.imread('hands/H2.png',cv2.IMREAD_UNCHANGED); im[:150,:260,3]=0
+r=im[...,:3].astype(int); sl=(im[...,3]>0)&(r.min(2)>170)&(np.arange(im.shape[1])[None,:]<300); im[sl,3]=0
+cv2.imwrite('hands/H2.png',im); print('H2 cleaned')

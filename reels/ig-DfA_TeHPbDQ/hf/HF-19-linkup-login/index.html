@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../_linkup/linkup.css">
+<link rel="stylesheet" href="../../../../reference/chatly-ui-kit/chatly-ui.css">
+<style>
+html, body { margin:0; background:#fff; }
+#stage { background:#fff; }
+#cam { position:absolute; left:0; top:0; width:1920px; height:1080px; transform-origin:0 0; }
+.shell { display:flex; width:1920px; height:1080px; background:#fff; }
+.chatcol { width:448px; flex:none; display:flex; flex-direction:column; border-right:1px solid #EDEDED; }
+.chatcol .th { flex:1; overflow:hidden; padding:24px 20px 0; display:flex; flex-direction:column; gap:14px; }
+.chatcol .dock { padding:0 16px 16px; }
+.pv { flex:1; min-width:0; }
+/* LinkUp login page (css px inside the Sites preview) */
+.lu-login { position:absolute; inset:0; overflow:hidden; background:#F4EFE2; font-family:'LUNunito',sans-serif; }
+.lu-login .cloud { position:absolute; background:#FFFFFF; border-radius:999px; filter:blur(6px); opacity:.75; }
+.lu-login .strip { position:absolute; left:0; right:0; top:0; height:34px; border-bottom:1px solid #E6DFCF; display:flex; align-items:center; justify-content:center; font-size:12px; color:#8C877C; letter-spacing:.02em; }
+.lu-login .card { position:absolute; left:50%; width:458px; margin-left:-229px; border-radius:22px; background:#FFFDF8; border:1.5px solid #ECD9DC; box-shadow:0 4px 0 #F1D3DA, 0 10px 24px rgba(120,80,60,.08); padding:30px 28px 26px; box-sizing:border-box; }
+.lu-login .q { font-family:'Chalkboard SE','Comic Sans MS',cursive; font-size:21px; color:#222; letter-spacing:.06em; }
+.lu-login .in { margin-top:18px; height:34px; border-radius:999px; border:1.5px solid #DDD6CB; display:flex; align-items:center; padding-left:14px; font-size:12px; color:#A39E94; background:#FFFFFF; }
+.lu-login .in i { width:1px; height:15px; background:#333; margin-right:3px; }
+.lu-login .nx { margin-top:16px; height:34px; border-radius:999px; background:#E88AA0; opacity:.55; color:#fff; font-size:12.5px; font-weight:700; display:flex; align-items:center; justify-content:center; }
+</style></head><body>
+<div id="stage"><div id="cam"></div></div>
+<script src="../lib/kit.js"></script><script src="../_linkup/linkup.js"></script>
+<script type="module">
+// HF-19: shot 39 (ref 47.96-49.50, t=0 at 47.96). LinkUp login inside the Chatly Sites builder (/sites/<id>, main sidebar + chat + preview).
+// out/HF-19-linkup-login-still.png = 16:10 UI ref for the Y6 in-camera screen; the mp4 is the optional direct cut (wide app -> push into the page).
+// PARAMS.path = 1 shows the real builder address field ("/" only) instead of the unconfirmed published domain.
+import CU from '../../../../reference/chatly-ui-kit/chatly-ui.js';
+const P = window.PARAMS || {}, H = P.still ? 1200 : 1080;
+const ADDR = P.path ? '/' : 'linkup.chatly.site'; // UNCONFIRMED published Sites domain (flagged)
+const login = `<div class="lu-login">
+  <div class="cloud" style="left:70px;top:150px;width:150px;height:46px"></div><div class="cloud" style="left:110px;top:132px;width:80px;height:40px"></div>
+  <div class="cloud" style="right:90px;top:250px;width:170px;height:50px"></div><div class="cloud" style="right:140px;top:232px;width:80px;height:40px"></div>
+  <div class="cloud" style="left:180px;top:640px;width:190px;height:52px"></div>
+  <div class="strip">— LINK UP! — get set up in a minute</div>
+  <img src="../_linkup/img/linkup-logo.png" style="position:absolute;left:22px;top:48px;width:64px">
+  <svg style="position:absolute;right:26px;top:86px" width="14" height="14" viewBox="0 0 10 10"><path d="M5 0l1.2 3.8L10 5 6.2 6.2 5 10 3.8 6.2 0 5l3.8-1.2z" fill="#E7A24A"/></svg>
+  <img src="../_linkup/img/linkup-logo.png" style="position:absolute;left:50%;top:140px;width:244px;margin-left:-122px">
+  <div style="position:absolute;left:50%;top:372px;width:22px;height:4px;margin-left:-11px;border-radius:2px;background:#E07A97"></div>
+  <div class="card" style="top:418px"><div class="q">What's your name?</div><div class="in"><i></i>e.g. Ying</div><div class="nx">Next</div></div>
+</div>`;
+const chat = CU.userBubble({ text: 'lets build a tool that can generate meeting times instantly' }) +
+  CU.working({ state: 'done', files: 6 }) +
+  CU.reply({ md: 'Here is **LinkUp**: everyone adds their city, status and hours, and it finds the best time for the whole crew.' });
+const shell = () => `<div class="cu shell" style="height:${H}px">${CU.sidebar({ activeNav: 'sites', recents: ['LinkUp', ...CU.DEFAULT_RECENTS.slice(0, 5)], active: 0, user: { name: 'Ying', plan: 'Ultra Plan', avatar: '' } })}
+  <div class="chatcol">${CU.navbar({ title: 'LinkUp', ring: null })}<div class="th">${chat}</div><div class="dock">${CU.promptBox({ placeholder: 'Ask Chatly to change anything...', maxWidth: 416 })}</div></div>
+  <div class="pv">${CU.sitesBuilder({ path: ADDR, previewHTML: login, w: 1920 - 256 - 448, h: H })}</div></div>`;
+const cam = document.getElementById('cam');
+window.ready = (async () => { cam.innerHTML = shell(); cam.style.height = H + 'px'; await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {})));
+  if (P.still) { const s = document.getElementById('stage'); s.style.width = '1920px'; s.style.height = '1200px'; } })();
+// camera: fit-to-frame app -> push into the LinkUp page (logo framing of ref 48.5-49.5)
+let LOGO = null;
+window.render = t => {
+  if (P.still) return;
+  if (!LOGO) { cam.style.transform = 'none'; const r = cam.querySelectorAll('.lu-login img')[1].getBoundingClientRect(); LOGO = [r.left + r.width / 2, r.top]; }
+  const fit = { s: 0.75, ax: 960, ay: 540, sx: 720, sy: 540 };
+  const near = { s: LU.lerpKeys([[0.54, 1.68], [1.0, 1.93], [1.54, 2.02]], t), ax: LOGO[0], ay: LOGO[1], sx: 730 - 4 * t, sy: 300 };
+  const u = LU.smooth(HF.clamp((t - 0.08) / 0.46));
+  const c = {}; for (const k in fit) c[k] = fit[k] + (near[k] - fit[k]) * u;
+  // move the anchor point continuously: interpolate in screen space via the anchor
+  cam.style.transform = `translate(${c.sx}px,${c.sy}px) scale(${c.s}) translate(${-c.ax}px,${-c.ay}px)`;
+  cam.style.filter = u > 0.05 && u < 0.95 ? `blur(${2.5 * Math.sin(u * Math.PI)}px)` : 'none';
+};
+</script></body></html>

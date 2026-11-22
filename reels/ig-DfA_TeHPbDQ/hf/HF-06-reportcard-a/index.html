@@ -1,0 +1,46 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script>
+// HF-06 Report card sequence A. Shots 5-7, ref frames 50..113 (2.08-4.75 s), 64 frames. ALPHA: the photo window is a
+// transparent HOLE for Leo's live L2 plate (quad per frame in out/HF-06-reportcard-a-hole.json). Everything else opaque.
+// ======== CONFIG ========
+const C='../../assets/cut/';
+const WIN={x0:502,y0:405,x1:892,y1:697};          // photo window in WORLD px (= shot 7 framing); card is fitted to it
+const SAGE='#CAD6BA', WALL='#E6E2D2';             // shot-7 backdrop; wall seen past the card edge in shot 6
+// cams: [refFrame, worldX, worldY, screenX, screenY, scale, rotDeg]
+const CAM=[[50,502,405,142,128,2.95,0],[64,502,405,146,124,2.95,0],
+ [65,502,405,442,540,3.45,0],[88,502,405,438,543,3.45,0],
+ [89,720,540,720,540,1,0],[113,720,540,720,540,1,0]];
+const CUTS=[50,65,89];
+const FAIL={cx:588,cy:388,w:238,h:178,rot:-12};    // final FAIL (world px)
+// FAIL slap (world offsets from final + rot + scale + screen blur vector) by ref frame
+const SLAP={78:[-26,92,-20,1.12,[150,-230]],79:[-38,-34,-16,1.1,[-30,-140]],80:[-5,-14,-12,1.03,[30,40]]};
+const HANDK={78:[-150,190,36,[150,-230]],79:[-160,90,40,[-30,-140]],80:[-95,150,42,[30,40]],81:[-90,152,43,null],82:[-90,152,43,null],83:[-180,250,40,[-200,240]]}; // hand: world offset of knuckle anchor from FAIL centre, rot, blur
+const HAND={w:380,anchor:[488,521]};               // H0 drawn width in WORLD px; knuckle anchor in H0 px
+// ========================
+const g=document.getElementById('c').getContext('2d');let IM,DET,CARD;
+window.ready=(async()=>{IM=await X.load({CARD:C+'GPT-03_00.png',FAIL:C+'GPT-04_00.png',H0:'../_props/hands/H0.png'});DET=await (await fetch('../_props/detect.json')).json();
+ const d=DET['GPT-03_00'];const cw=(WIN.x1-WIN.x0)/(d[2]-d[0]),ch=(WIN.y1-WIN.y0)/(d[3]-d[1]);CARD={x:WIN.x0-d[0]*cw,y:WIN.y0-d[1]*ch,w:cw,h:ch};})();
+function camAt(f){const seg=CUTS.filter(c=>c<=f).pop(),nx=CUTS.find(x=>x>seg);const keys=CAM.filter(c=>c[0]>=seg&&(nx===undefined||c[0]<nx));return X.track(keys.map(k=>[k[0],k.slice(1)]),f);}
+function applyCam(G,c,J){const [wx,wy,sx,sy,s,r]=c;G.setTransform(1,0,0,1,0,0);G.translate(sx+J.dx,sy+J.dy);G.rotate(r*Math.PI/180+J.rot);G.scale(s,s);G.translate(-wx,-wy);}
+function toScreen(c,J,x,y){const [wx,wy,sx,sy,s,r]=c;const a=r*Math.PI/180+J.rot;return [sx+J.dx+((x-wx)*Math.cos(a)-(y-wy)*Math.sin(a))*s,sy+J.dy+((x-wx)*Math.sin(a)+(y-wy)*Math.cos(a))*s];}
+function jit(t,f){return f>=89?HF.jitter(t,3,1.2,0.12):HF.jitter(t,4,2.0,0.15);}
+const HOLEPAD=2; // world px the hole extends past the detected grey window (kills grey fringe)
+window.hole=t=>{const f=50+Math.round(t*24),c=camAt(f),J=jit(t,f);const p=HOLEPAD;return [[WIN.x0-p,WIN.y0-p],[WIN.x1+p,WIN.y0-p],[WIN.x1+p,WIN.y1+p],[WIN.x0-p,WIN.y1+p]].map(q=>toScreen(c,J,q[0],q[1]).map(v=>+v.toFixed(1)));};
+function scene(G,f,c,J){
+ applyCam(G,c,J);G.fillStyle=f>=89?SAGE:WALL;G.fillRect(-3000,-3000,8000,8000);
+ G.save();G.shadowColor='rgba(40,50,30,.28)';G.shadowBlur=10;G.shadowOffsetY=4;G.drawImage(IM.CARD,CARD.x,CARD.y,CARD.w,CARD.h);G.restore();
+ // punch the photo window
+ G.save();G.globalCompositeOperation='destination-out';G.fillRect(WIN.x0-HOLEPAD,WIN.y0-HOLEPAD,WIN.x1-WIN.x0+2*HOLEPAD,WIN.y1-WIN.y0+2*HOLEPAD);G.restore();
+}
+function drawFail(G,f,dx,dy){const k=SLAP[f]||[0,0,FAIL.rot,1];X.draw(G,IM.FAIL,{cx:FAIL.cx+k[0]+dx,cy:FAIL.cy+k[1]+dy,w:FAIL.w,h:FAIL.h,rot:k[2],scale:k[3],inset:[.004,.004,.012,.03],shadow:{op:.3,blur:5,dy:2}});}
+function drawHand(G,f,dx,dy){const k=HANDK[f];const s=HAND.w/IM.H0.width;G.save();G.translate(FAIL.cx+k[0]+dx,FAIL.cy+k[1]+dy);G.rotate(k[2]*Math.PI/180);
+ G.shadowColor='rgba(0,0,0,.35)';G.shadowBlur=14;G.shadowOffsetY=8;G.drawImage(IM.H0,-HAND.anchor[0]*s,-HAND.anchor[1]*s,IM.H0.width*s,IM.H0.height*s);G.restore();}
+window.render=t=>{const f=50+Math.round(t*24);g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,1440,1080);const c=camAt(f),J=jit(t,f);
+ scene(g,f,c,J);
+ if(f>=78){const sv=SLAP[f]&&SLAP[f][4];const s=c[4];
+  if(sv)X.mblur(g,sv,16,(G,dx,dy)=>{applyCam(G,c,J);drawFail(G,f,dx/s,dy/s);});else{applyCam(g,c,J);drawFail(g,f,0,0);}}
+ if(HANDK[f]){const hv=HANDK[f][3],s=c[4];if(hv)X.mblur(g,hv,16,(G,dx,dy)=>{applyCam(G,c,J);drawHand(G,f,dx/s,dy/s);});else{applyCam(g,c,J);drawHand(g,f,0,0);}}
+ g.setTransform(1,0,0,1,0,0);
+};
+</script></body></html>

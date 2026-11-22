@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script>
+// HF-12 Map sticker pile-up. Shot 20 remainder, ref frames 562..609 (23.42-25.42 s), 48 frames.
+// Background = last frame of seg1923/out/seg1923-real-v2-4x3.mp4 (bg.png). Chips pop on (1-frame appear + 2-frame settle), no hand.
+// ======== CONFIG: [key, refFrame, x0,y0,x1,y1 (rotated bbox, output px), rotDeg, filter] ========
+const C='../../assets/cut/';
+const CHIPS=[
+ ['GMT',562,360,418,690,676,-12,'saturate(.9)'],
+ ['UTC',568,768,566,1052,842,50,'saturate(.35) brightness(1.22)'],
+ ['AMS',571,452,482,1042,690,-4,'saturate(.75)'],
+ ['P2',576,942,580,1166,780,-3,''],
+ ['P8',582,236,578,532,862,-26,'brightness(.9) saturate(.85)'],
+ ['SIN',585,540,338,1050,522,-4,''],
+ ['NY',592,380,606,986,852,8,'saturate(.85)'],
+ ['LON',597,354,246,714,462,-12,'saturate(.85) brightness(.95)'],
+ ['QB',600,842,598,1096,902,20,'saturate(.65) hue-rotate(-12deg) brightness(.86)'],
+ ['QP',603,204,326,406,620,-3,'saturate(.55) brightness(1.02) hue-rotate(8deg)'],
+ ['QG',605,598,366,872,676,22,'']];
+const DRIFT=[[0,0,0],[12,-2,1],[24,1,3],[36,3,1],[47,1,-2]]; // [j, dx, dy] handheld drift of the whole plate
+// ===============================================================
+const g=document.getElementById('c').getContext('2d');let IM;
+window.ready=(async()=>{IM=await X.load({BG:'bg.png',GMT:C+'GPT-01_04.png',UTC:C+'GPT-02_03.png',AMS:C+'GPT-01_01.png',P2:C+'GPT-02_04.png',P8:C+'GPT-01_05.png',SIN:C+'GPT-02_00.png',NY:C+'GPT-02_01.png',LON:C+'GPT-02_02.png',QB:C+'GPT-02_06.png',QP:C+'GPT-02_07.png',QG:C+'GPT-02_05.png'});})();
+window.render=t=>{const j=Math.round(t*24),f=562+j;g.setTransform(1,0,0,1,0,0);
+ const [dx,dy]=X.track(DRIFT.map(d=>[d[0],[d[1],d[2]]]),j);const J=HF.jitter(t,9,1.0,0.08);
+ g.setTransform(1.008,0,0,1.008,-5.76+dx+J.dx,-4.32+dy+J.dy);g.drawImage(IM.BG,0,0,1440,1080);
+ CHIPS.forEach(([k,on,x0,y0,x1,y1,rot,flt],i)=>{if(f<on)return;const b=X.fromBBox(x0,y0,x1,y1,rot,IM[k].width/IM[k].height);const d=f-on;const sc=d<1?1.07:d<2?1.025:1;
+  X.draw(g,IM[k],{cx:b.cx,cy:b.cy,w:b.w,h:b.h,rot,scale:sc,filter:flt||undefined,shadow:{op:.32,blur:9,dx:2,dy:5}});});
+};
+</script></body></html>

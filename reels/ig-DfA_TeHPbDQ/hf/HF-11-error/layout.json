@@ -1,5 +1,5 @@
 {"asset":"HF-11","ref":"shot 12, 13.750-14.750 (f330-f354)","frames":24,"output":"out/HF-11-error.mov (ProRes 4444 alpha)",
- "events":{"dialog_on":"asset frame 8 (ref 14.083, f338), hard pop, +-1px jitter on 2s"},
+ "events":{"dialog_on":"asset frame 9 (ref 14.125, f339 measured frame-exact; ASSETS.md said f338), hard pop, +-1px jitter on 2s"},
  "holes_px_1440x1080":{"leo":"full frame (L3 plate underneath everything)",
   "ying_pip":{"x":1137,"y":868,"w":345,"h":190,"r":13,"note":"runs off the right edge; Ying PIP plate cover-fit + rounded mask, above Leo plate, below this overlay"}},
  "notes":"Subtitle 'See,' is HF-02."}

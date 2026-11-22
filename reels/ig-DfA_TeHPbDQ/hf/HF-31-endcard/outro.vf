@@ -1,0 +1,1 @@
+delogo=x=800:y=632:w=322:h=72,crop=1440:1080:240:0,drawtext=fontfile=/Users/faseeh/Developer/Chatly/reels/ig-DfA_TeHPbDQ/hf/_linkup/fonts/GoogleSans-Medium.ttf:textfile=/Users/faseeh/Developer/Chatly/reels/ig-DfA_TeHPbDQ/hf/HF-31-endcard/tagline.txt:fontsize=46:fontcolor=white:x=(w-text_w)/2:y=668-text_h/2:alpha='if(lt(t\,0.98)\,0\,min(1\,(t-0.98)/0.35))',fps=24

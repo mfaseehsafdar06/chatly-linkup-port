@@ -22,3 +22,16 @@ The source sheets are in `../gpt/GPT-XX.png`, with prompts in `../gpt/prompts.js
 | GPT-13_00 / 01 | Pink bear chat stickers. **On hold:** they look too close to Zanmang Loopy. Use a 😭 emoji until the owner decides |
 
 **2026-11-22:** sheets 01–05 and 07–11 were regenerated in the reference's scrawled hand-drawn style with gpt-image-2/edit, using reference frames (`../styleref/`) as style examples (script `../regen_hand.mjs`). The earlier clean versions are in `../gpt/v1-clean/`. The owner rejected those as "too clean".
+
+## "This is Faseeh" props (2026-11-22, for the real script in ../faseeh/SCRIPT.md)
+| File | What |
+|---|---|
+| F-01_00 / 01 / 02 | FASEEH (purple crayon on pink), 2AM with a clock, "in NEW YORK" (blue) |
+| F-01_03 / 04 / 05 | −5 (green), 0 (pink), +5 (red) |
+| F-01_06 / 07 / 08 | "30 × 3 × 7" (white strip), "= 630" (yellow), "@" (orange) |
+| F-02_00 / 01 / 02 | "POSTED 3 HOURS LATE. AGAIN." (red strip), "EVERY ACCOUNT. ON TIME." (green strip), "where's the 9am post??" (white notification card) |
+| F-03_00 … 03 | Sticky notes: HOOKS?, CAPTIONS?, HASHTAGS?, TRENDING AUDIO?? |
+| F-04_00 | FEEDER ACCOUNTS TO FEED scroll, full plate, empty boxes |
+| F-05_00 … 03 | Prompt cards: one with empty {{ }} blanks, then filled versions (TikTok/leg day/@gymtok.daily, Reels/exam week/@studyhacks.pk, Shorts/new AI tools/@aitoolsfyi) |
+
+Printable versions for the shoot (Letter size, 300 dpi) are in `../faseeh/props/PRINT-*.pdf`.

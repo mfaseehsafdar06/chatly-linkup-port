@@ -1,0 +1,80 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script>
+// HF-13 MEETING TIME? poster, stop-motion. Shots 22-23, ref frames 660..725 (27.50-30.25 s), 66 frames.
+// The poster is laid out in WORLD coords = the wide shot 23 framing (1440x1080). Close-ups are camera moves over it.
+// ======== CONFIG ========
+const C='../../assets/cut/', AV='../_props/av/';
+const PLATE={x:81,y:6,s:0.597,sy:1.22};           // GPT-07_00 placement in world px (globe fitted to ref globe)
+const CARDS={ // key: [cutout, x0,y0,x1,y1 (world), rotDeg, headshot, headshotFilter, tickBox (card-normalised x0,y0,x1,y1)]
+ LEO:  ['GPT-08_00',188,387,525,588,-1, 'f4-white-40s.jpg','saturate(.75) contrast(1.05)',[.77,.22,.87,.44]],
+ MULLET:['GPT-08_01',918,307,1278,513,2,'m3-white-40s.jpg','saturate(.8) sepia(.15)',[.81,.16,.92,.41]],
+ IZY:  ['GPT-08_02',590,570,908,788,1,  'm1-latino-mid20s.jpg','grayscale(1) contrast(1.15) brightness(1.05)',[.74,.17,.85,.43]],
+ LUKE: ['GPT-08_03',252,800,548,1020,0, 'm2-black-mid30s.jpg','saturate(.8)',[.80,.16,.91,.42]],
+ FIN:  ['GPT-08_04',960,770,1332,990,1, 'm4-eastasian-early30s.jpg','saturate(.85)',[.78,.16,.88,.42]]};
+const TICK={w:60,h:64};                            // tick chip size in world px
+// camera keys: [refFrame, worldX, worldY, screenX, screenY, scale, rotDeg]  (world point W shown at screen P)
+const CAM=[[660,749,679,737,540,1.38,-8],[663,749,679,757,553,2.74,-9],[669,749,679,754,562,2.72,-8],[678,749,679,752,572,2.70,-7],
+ [679,1098,410,712,560,2.9,-16],[687,1098,410,706,566,2.92,-16],
+ [688,1146,880,742,565,2.6,-6],[698,1146,880,738,574,2.58,-6],
+ [699,720,540,720,540,1,0],[725,720,540,720,540,1,0]];
+const CUTS=[660,663,679,688,699];                  // hard cuts (no interpolation across)
+const ZOOMBLUR=[661,662];                          // arrival frames blended from cam 660 -> 663
+// hand placements (pinch hand GPT-12_01 carrying a tick chip). [card, tick, tHandIn, tPlaced, exitFrames{frame:[dx,dy,blur]}]
+const PLACE=[
+ {card:'IZY',tick:'Y',in:670,placed:676,exit:{676:[70,-40,0],677:[260,-200,40],678:[520,-420,40]}},
+ {card:'MULLET',tick:'N',in:679,placed:684,exit:{684:[120,-30,30],685:[420,-120,40]}},
+ {card:'FIN',tick:'Y',in:688,placed:688,exit:{688:[10,0,0],689:[140,-25,24],690:[340,-60,36],691:[600,-90,40]}}];
+const HAND={rot:-38,w:700,anchor:[12,223]};       // hand-local point (in H1 px) where the chip centre sits
+const END={LEO:'N',MULLET:'Y',IZY:'N',LUKE:'Y',FIN:'N'}; // tick end state at 30.0 s (ref frame 720)
+// ========================
+const g=document.getElementById('c').getContext('2d');let IM,DET,PAPER='rgb(232,234,222)';
+window.ready=(async()=>{const m={PLATE:C+'GPT-07_00.png',H1:'../_props/hands/H1.png',Y1:C+'GPT-08_05.png',Y2:C+'GPT-08_06.png',N1:C+'GPT-08_07.png',N2:C+'GPT-08_08.png'};
+ for(const[k,v]of Object.entries(CARDS)){m[k]=C+v[0]+'.png';m['av'+k]=AV+v[6];}
+ IM=await X.load(m);DET=await (await fetch('../_props/detect.json')).json();
+ const c=document.createElement('canvas');c.width=40;c.height=40;const cg=c.getContext('2d');cg.drawImage(IM.PLATE,0,0,60,60,0,0,40,40);const d=cg.getImageData(0,0,40,40).data;let r=0,gg=0,b=0;for(let i=0;i<d.length;i+=4){r+=d[i];gg+=d[i+1];b+=d[i+2];}const n=d.length/4;PAPER=`rgb(${r/n*.97|0},${gg/n*.99|0},${b/n*.93|0})`;
+ // feathered plate
+ const P=IM.PLATE,f=document.createElement('canvas');f.width=P.width;f.height=P.height;const fg=f.getContext('2d');fg.drawImage(P,0,0);fg.globalCompositeOperation='destination-in';
+ const mk=document.createElement('canvas');mk.width=P.width;mk.height=P.height;const mg=mk.getContext('2d');mg.fillStyle='#000';mg.filter='blur(30px)';mg.fillRect(60,60,P.width-120,P.height-120);fg.drawImage(mk,0,0);IM.PF=f;})();
+// tick state for frame f
+function tickState(f){const s={LEO:null,MULLET:null,IZY:null,LUKE:null,FIN:null};
+ if(f<699){for(const p of PLACE)if(f>=p.placed)s[p.card]=p.tick;return s;}
+ if(f>=720)return {...END};
+ const keys=Object.keys(s);for(let i=0;i<5;i++){const R=HF.rng(HF.hash(i*31,Math.floor((f-699+i)/ (2+(i%2)))));s[keys[i]]=R()<.5?'Y':'N';}
+ if(keys.every(k=>s[k]==='Y'))s[keys[(f*7)%5]]='N';return s;}
+function cardBox(k){const v=CARDS[k];return {cx:(v[1]+v[3])/2,cy:(v[2]+v[4])/2,w:v[3]-v[1],h:v[4]-v[2],rot:v[5]};}
+function tickPos(k){const b=cardBox(k),t=CARDS[k][8];const lx=((t[0]+t[2])/2-.5)*b.w,ly=((t[1]+t[3])/2-.5)*b.h;const a=b.rot*Math.PI/180;
+ return [b.cx+lx*Math.cos(a)-ly*Math.sin(a),b.cy+lx*Math.sin(a)+ly*Math.cos(a),b.rot];}
+function drawTick(G,x,y,rot,t,seed){const img=IM[(t==='Y'?'Y':'N')+(1+(seed%2))];X.draw(G,img,{cx:x,cy:y,w:TICK.w,h:TICK.h,rot:rot+((seed*37)%5-2),shadow:{op:.3,blur:4,dy:2}});}
+function world(G,f){G.fillStyle=PAPER;G.fillRect(-2000,-2000,6000,6000);
+ G.drawImage(IM.PF,PLATE.x,PLATE.y,IM.PLATE.width*PLATE.s,IM.PLATE.height*PLATE.s*PLATE.sy);G.save();G.globalCompositeOperation='multiply';G.fillStyle='rgb(247,252,236)';G.fillRect(-2000,-2000,6000,6000);G.restore();
+ const ts=tickState(f);
+ for(const k of Object.keys(CARDS)){const v=CARDS[k],b=cardBox(k);const sl=DET[v[0]];
+  G.save();G.translate(b.cx,b.cy);G.rotate(b.rot*Math.PI/180);G.shadowColor='rgba(0,0,0,.35)';G.shadowBlur=8;G.shadowOffsetY=4;
+  G.drawImage(IM[k],-b.w/2,-b.h/2,b.w,b.h);G.shadowColor='transparent';
+  if(sl){const x0=-b.w/2+sl[0]*b.w,y0=-b.h/2+sl[1]*b.h,w=(sl[2]-sl[0])*b.w,h=(sl[3]-sl[1])*b.h;const a=IM['av'+k];const sc=Math.max(w/a.width,h/a.height);
+   G.save();G.beginPath();G.rect(x0,y0,w,h);G.clip();G.filter=v[7];G.drawImage(a,x0+w/2-a.width*sc/2,y0+h/2-a.height*sc*.45,a.width*sc,a.height*sc);G.restore();
+   G.strokeStyle='rgba(255,255,255,.55)';G.lineWidth=1.5;G.strokeRect(x0+1,y0+1,w-2,h-2);}
+  G.restore();
+  if(ts[k]){const [x,y,r]=tickPos(k);drawTick(G,x,y,r,ts[k],k.length+(f>=699?Math.floor(f/3):0));}}
+}
+function camAt(f){let seg=CUTS.filter(c=>c<=f).pop();const keys=CAM.filter(c=>c[0]>=seg&&(CUTS.find(x=>x>seg)===undefined||c[0]<CUTS.find(x=>x>seg)));
+ if(keys.length===1)return keys[0].slice(1);return X.track(keys.map(k=>[k[0],k.slice(1)]),f);}
+function applyCam(G,c,jit){const [wx,wy,sx,sy,s,r]=c;const a=(r+(jit?jit.rot*57.3:0))*Math.PI/180;
+ G.setTransform(1,0,0,1,0,0);G.translate(sx+(jit?jit.dx:0),sy+(jit?jit.dy:0));G.rotate(a);G.scale(s,s);G.translate(-wx,-wy);}
+window.render=t=>{const j=Math.round(t*24),f=660+j;g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,1440,1080);
+ const jit=f>=699?HF.jitter(t,5,2.5,0.25):HF.jitter(t,8,1.5,0.15);
+ if(ZOOMBLUR.includes(f)){const c0=CAM[0].slice(1),c1=CAM[1].slice(1);const R={661:[.02,.2],662:[.22,.52]}[f];
+  X.mblur(g,[10,0],12,(G,dx)=>{const u=R[0]+(R[1]-R[0])*(dx/10+.5);const e=u*u*(3-2*u);const c=c0.map((v,i)=>v+(c1[i]-v)*e);applyCam(G,c,jit);G.filter='blur(2.5px)';world(G,f);G.filter='none';G.setTransform(1,0,0,1,0,0);});
+ } else {applyCam(g,camAt(f),jit);world(g,f);g.setTransform(1,0,0,1,0,0);}
+ // hand
+ for(const p of PLACE){let off=null;if(f>=p.in&&f<p.placed)off=[0,0,0];else if(p.exit[f])off=p.exit[f];if(!off)continue;
+  const c=camAt(f);const [tx,ty,tr]=tickPos(p.card);const [wx,wy,sx,sy,s,r]=c;const a=r*Math.PI/180;
+  const px=sx+jit.dx+((tx-wx)*Math.cos(a)-(ty-wy)*Math.sin(a))*s, py=sy+jit.dy+((tx-wx)*Math.sin(a)+(ty-wy)*Math.cos(a))*s;
+  const hs=HAND.w/IM.H1.width, wig=HF.jitter(t,p.in,3,1.2);
+  const drawHand=(G,dx,dy)=>{G.save();G.translate(px+off[0]+dx+wig.dx,py+off[1]+dy+wig.dy);G.rotate((HAND.rot+r)*Math.PI/180+wig.rot);
+   if(f<p.placed){const img=IM[(p.tick==='Y'?'Y':'N')+'1'];G.save();G.rotate(-(HAND.rot)*Math.PI/180);G.shadowColor='rgba(0,0,0,.3)';G.shadowBlur=6;G.shadowOffsetY=3;G.drawImage(img,-TICK.w*s/2,-TICK.h*s/2,TICK.w*s,TICK.h*s);G.restore();}
+   G.shadowColor='rgba(0,0,0,.35)';G.shadowBlur=18;G.shadowOffsetY=12;G.drawImage(IM.H1,-HAND.anchor[0]*hs,-HAND.anchor[1]*hs,IM.H1.width*hs,IM.H1.height*hs);G.restore();};
+  if(off[2])X.mblur(g,[off[2],-off[2]*.6],6,drawHand);else drawHand(g,0,0);}
+};
+</script></body></html>

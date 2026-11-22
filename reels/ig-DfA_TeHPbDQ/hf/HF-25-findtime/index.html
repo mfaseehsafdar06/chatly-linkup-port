@@ -1,0 +1,47 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../_linkup/linkup.css">
+<style>
+#room { position:absolute; inset:0; background: radial-gradient(ellipse 260px 200px at 1350px 330px, #8E2A2C 0%, rgba(80,20,24,.0) 100%), radial-gradient(ellipse 300px 400px at 1330px 820px, #3A3534 0%, #161313 80%), #141111; filter: blur(6px); }
+#scr { position:absolute; left:-200px; top:-150px; width:1385px; height:1400px; transform-origin: 1000px 600px; }
+#page { position:absolute; inset:0; background: linear-gradient(170deg,#F6F2E8,#F1ECE0); overflow:hidden; }
+#bezel { position:absolute; left:1185px; top:-150px; width:62px; height:1400px; background:linear-gradient(90deg,#0d0d0f,#1a1a1d 60%,#0b0b0c); }
+.ab { position:absolute; }
+.ib { position:absolute; width:84px; height:84px; border-radius:50%; border:2px solid #B4B0A5; background:rgba(255,255,255,.45); box-sizing:border-box; display:flex; align-items:center; justify-content:center; }
+.tx { font-size:30px; color:#6E6A61; white-space:nowrap; }
+#bar { position:absolute; left:-100px; top:532px; width:1398px; height:311px; border-radius:0 70px 70px 0; background:#24112B; }
+.pill { position:absolute; border-radius:999px; background:#D9708E; box-shadow: 0 13px 0 #B4506F; display:flex; align-items:center; justify-content:center; gap:14px; color:#FCEBD8; font-weight:700; }
+</style></head><body>
+<div id="stage" class="lu"><div id="room"></div>
+<div id="cam" style="position:absolute;inset:0;transform-origin:0px 540px">
+ <div id="scr"><div id="page">
+  <canvas id="gl" width="800" height="600" class="ab" style="left:0;top:0"></canvas>
+  <div class="ib" style="left:495px;top:123px"><svg width="40" height="40" viewBox="0 0 24 24" fill="none" stroke="#6E6A61" stroke-width="1.5"><circle cx="12" cy="12" r="5.5"/><path d="M12 2.5v3.5M12 18v3.5M2.5 12H6M18 12h3.5"/></svg></div>
+  <div class="ib" style="left:491px;top:220px"><svg width="36" height="36" viewBox="0 0 24 24" fill="none" stroke="#6E6A61" stroke-width="1.6" stroke-linecap="round"><path d="M4 9V4h5M15 4h5v5M20 15v5h-5M9 20H4v-5"/></svg></div>
+  <div class="ab tx" style="left:130px;top:355px;display:flex;align-items:center;gap:12px"><i class="lu-dot g" style="width:16px;height:16px"></i>always available</div>
+  <div class="ab tx" style="left:40px;top:405px">Tap a pin to see everyone at once</div>
+  <svg class="ab" style="left:1043px;top:448px" width="132" height="34" viewBox="0 0 132 34" fill="none" stroke="#C9C4B8" stroke-width="5" stroke-linecap="round"><path d="M4 22c12-14 22-14 32 0s20 14 30 0 20-14 30 0 18 12 30 0"/></svg>
+  <div id="bar"></div>
+  <div class="pill" id="fbt" style="left:690px;top:618px;width:538px;height:134px;font-size:41px">
+    <svg style="flex:none" width="54" height="54" viewBox="0 0 24 24" fill="#FFF3F5"><path d="M10 2l1.6 5.4L17 9l-5.4 1.6L10 16l-1.6-5.4L3 9l5.4-1.6z"/><path d="M18 13l.9 2.6 2.6.9-2.6.9L18 20l-.9-2.6-2.6-.9 2.6-.9z"/><path d="M5 15l.6 1.6 1.6.6-1.6.6L5 19.4l-.6-1.6-1.6-.6 1.6-.6z"/></svg>Find Best Time</div>
+  <div class="pill" style="left:980px;top:960px;width:320px;height:88px;font-size:35px;box-shadow:0 8px 0 #B4506F;border:2px solid #B4506F">Done marking</div>
+ </div></div>
+ <div id="bezel"></div>
+</div></div>
+<script src="../lib/kit.js"></script>
+<script src="../_linkup/vendor/d3.min.js"></script><script src="../_linkup/vendor/topojson-client.min.js"></script><script src="../_linkup/vendor/land-50m.js"></script>
+<script src="../_linkup/linkup.js"></script>
+<script>
+// HF-25: shot 47, ref 62.75-63.63 (t=0 at 62.75). Hand cursor clicks "Find Best Time" at 62.90 (2 px press for 3 frames).
+const T0 = 62.75, $ = s => document.querySelector(s), cur = LU.cursorEl($('#page'));
+window.ready = (async () => { await LU.loadLand('50m'); await document.fonts.ready; const g = $('#gl').getContext('2d'); LU.drawGlobe(g, { cx: 50, cy: -260, r: 535, lon0: -40, lat0: -10 }); })();
+window.render = t => {
+  const f = (T0 + t - 62.90) * 24, press = f >= 0 && f < 3;
+  $('#fbt').style.transform = press ? 'translateY(3px)' : ''; $('#fbt').style.boxShadow = press ? '0 10px 0 #B4506F' : '0 13px 0 #B4506F';
+  // handheld drift + slight keystone of the filmed laptop screen
+  const dx = 4 * t + Math.sin(t * 3) * 3, dy = -6 * t + Math.cos(t * 2.4) * 2;
+  $('#cam').style.transform = `translate(${dx}px,${dy}px) perspective(2200px) rotateY(${-3 + 10 * t}deg) rotateZ(${-0.6 + t * 0.4}deg)`;
+  $('#page').style.filter = `blur(${0.6 + Math.max(0, t - 0.4) * 1.2}px)`;
+  const cx = 1030, cy = 752 + (t < 0.1 ? (0.1 - t) * 160 : 0);
+  cur.set(cx, cy, t < 0.09 ? 'arrow' : 'hand', 1.25);
+};
+</script></body></html>

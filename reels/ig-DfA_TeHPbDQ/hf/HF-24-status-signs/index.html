@@ -1,0 +1,36 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script>
+// HF-24 Status-sign slide-ins, ALPHA overlays for the live plates (shots 44-46). One beat per render: PARAMS.beat = A | M | L.
+//  A ANYTIME   shot 44, ref frames 1391..1438 (48 f)   grip hand on the left end
+//  M MAYBE?    shot 45, ref frames 1439..1469 (31 f)   held at both ends from below
+//  L LEAVE ME ALONE!  shot 46, ref frames 1470..1505 (36 f)   swings in from top-left, hand at lower-left corner
+// Sign keys measured from the reference per frame: [refFrame, cx, cy, rotDeg, blurVec(px)] ; size = full sign w,h (output px)
+// Hand H2 = grip hand; its card-edge grip point in H2 px is GRIP (thumb in front of the sign).
+// ======== CONFIG ========
+const C='../../assets/cut/';
+const GRIP=[795,123];
+const BEATS={
+ A:{k0:1391,img:'GPT-09_00',w:535,h:177,keys:[[1391,-25,352,1.8,[80,0]],[1392,62,348,1.8,[70,0]],[1393,130,349,1.8,[55,0]],[1394,181,354,1.8,[42,0]],[1395,222,356,1.8,[26,0]],
+   [1396,248,356,1.8,0],[1397,270,357,1.8,0],[1398,282,357,1.8,0],[1399,292,354,1.8,0],[1400,300,350,1.8,0],[1401,306,350,1.8,0],[1404,318,353,1.8,0],[1410,320,353,1.9,0],[1422,320,355,2,0],[1438,321,352,1.8,0]],
+   hands:[{at:[0,.5],scale:.72,rot:0,dx:0,dy:0}]},
+ M:{k0:1439,img:'GPT-09_01',w:594,h:236,keys:[[1444,170,1240,4,0],[1445,200,1110,4,[30,-110]],[1446,330,1000,3,[30,-95]],[1447,370,906,2.2,[10,-60]],[1448,376,865,1,[0,-30]],
+   [1449,383,838,1,0],[1450,391,818,1,0],[1451,387,809,1.2,0],[1452,390,807,2.3,0],[1454,403,811,2.3,0],[1458,426,816,3,0],[1464,423,825,1.8,0],[1469,420,826,2,0]],
+   hands:[{at:[0,.62],scale:.8,rot:-38,dx:6,dy:0},{at:[1,.62],scale:.8,rot:38,dx:-6,dy:0,flip:1}]},
+ L:{k0:1470,img:'GPT-09_02',w:451,h:327,keys:[[1477,120,-160,-35,0],[1478,205,70,-26,[110,120]],[1479,304,173,-17,[95,95]],[1480,372,253,-11.5,[45,55]],[1481,398,291,-10.8,[14,18]],
+   [1482,411,309,-11,0],[1483,414,312,-11,0],[1490,418,313,-11.2,0],[1505,418,313,-11,0]],
+   hands:[{at:[.04,.9],scale:.55,rot:-28,dx:0,dy:0}]}};
+// ========================
+const B=BEATS[(window.PARAMS&&window.PARAMS.beat)||'A'];
+const g=document.getElementById('c').getContext('2d');let IM;
+window.ready=(async()=>{IM=await X.load({S:C+B.img+'.png',H2:'../_props/hands/H2.png'});})();
+function key(f){if(f<B.keys[0][0])return null;const k=B.keys.map(q=>[q[0],q.slice(1,4)]);const v=X.track(k,f);const ex=B.keys.find(q=>q[0]===f);return {cx:v[0],cy:v[1],rot:v[2],blur:ex?ex[4]:0};}
+function drawAll(G,s,J,dx,dy){const a=(s.rot)*Math.PI/180+J.rot;
+ X.draw(G,IM.S,{cx:s.cx+dx+J.dx,cy:s.cy+dy+J.dy,w:B.w,h:B.h,rot:s.rot+J.rot*57.3,inset:[.003,.003,.003,.02],shadow:{op:.25,blur:8,dy:4}});
+ for(const h of B.hands){const lx=(h.at[0]-.5)*B.w,ly=(h.at[1]-.5)*B.h;const px=s.cx+dx+J.dx+lx*Math.cos(a)-ly*Math.sin(a),py=s.cy+dy+J.dy+lx*Math.sin(a)+ly*Math.cos(a);
+  G.save();G.translate(px+h.dx,py+h.dy);G.rotate(a+h.rot*Math.PI/180);if(h.flip)G.scale(-1,1);G.scale(h.scale,h.scale);G.shadowColor='rgba(0,0,0,.3)';G.shadowBlur=14;G.shadowOffsetY=6;
+  G.drawImage(IM.H2,-GRIP[0],-GRIP[1]);G.restore();}}
+window.render=t=>{const f=B.k0+Math.round(t*24);g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,1440,1080);const s=key(f);if(!s)return;
+ const J=HF.jitter(t,B.k0,1.2,0.25);
+ if(s.blur)X.mblur(g,s.blur,12,(G,dx,dy)=>drawAll(G,s,J,dx,dy));else drawAll(g,s,J,0,0);};
+</script></body></html>

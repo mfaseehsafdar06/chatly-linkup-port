@@ -1,0 +1,7 @@
+{"asset":"HF-10","ref":"shot 10, 11.125-13.500 (f267-f324)","frames":57,
+ "outputs":{"out/HF-10-ying_ui.mov":"alpha: surround (code-drawn dark blur stand-in, opaque) + Meet bottom band + lavender border + 'Ying' + Um/its words; tile interior is a hole",
+            "out/HF-10-ying_3am.mov":"alpha: giant 3AM only, visible from asset frame 35 (ref 12.583, f302)"},
+ "holes_px_1440x1080":{"ying_tile":{"x":64,"y":131,"w":1324,"h":735,"r":31,"plate":"Y1 Ying webcam, cover-fit"}},
+ "comp_order":["Y1 plate (cover the tile)","HF-10-ying_3am.mov","Ying person cutout = Y1 x per-frame person matte (so her head covers the A)","HF-10-ying_ui.mov"],
+ "text_timing_asset_frames":{"Um":0,"UmM":3,"UmMM":5,"UmMMm":7,"UmMMmM":9,"UmMMmMm":11,"UmMMmMmm":13,"its (Um clears)":15,"3AM":35},
+ "notes":"HF-09's blue+pink ? stickers carry over frames 0-1 (not in this asset)."}

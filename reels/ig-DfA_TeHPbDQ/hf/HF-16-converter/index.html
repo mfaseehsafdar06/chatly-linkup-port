@@ -1,0 +1,151 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="../HF-07-meet/common.js"></script><script src="../HF-07-meet/chatly-mark.js"></script>
+<style>
+  #scn{position:absolute;left:0;top:0;width:1440px;height:1080px;overflow:hidden;background:#fff;font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif;color:#15181d}
+  .t{position:absolute;white-space:nowrap;line-height:1}
+  .bx{position:absolute;box-sizing:border-box}
+  .gry{color:#6b7280}.blu{color:#2f6fa8}
+</style>
+</head><body><div id="stage"><div id="scn"></div></div>
+<script>
+// HF-16 · Time-converter website (shot 34, ref 41.792–43.500, f1003–f1044, 41 frames). Full-frame mp4, real (ungraded) UI colours.
+// Four camera set-ups, each laid out in screen px from the ref:
+//   k0-6 search close-up (AMSTERD k0, AMSTERDA k2, AMSTERDAM k6) · k7-9 / k10-13 / k14-18 wide pages (Amsterdam, London, New York)
+//   k19-28 blurred whip-pan along the controls · k29-40 time card, knob dragged 7:45 pm -> 11:45 pm.
+// Brand swaps: "Savvy Time" -> "TimeZone Converter" (generic ring-clock logo); Safari tab "Home | Lovable" -> Chatly favicon + "Chatly".
+// No subtitle ("So I knew" is HF-02).
+CM.initGuide();
+const scn = document.getElementById('scn');
+const T = (x, y, s, txt, st = '') => `<div class="t" style="left:${x}px;top:${y - s * 0.8}px;font-size:${s}px;${st}">${txt}</div>`;         // y = baseline
+const TR = (xr, y, s, txt, st = '') => `<div class="t" style="right:${1440 - xr}px;top:${y - s * 0.8}px;font-size:${s}px;${st}">${txt}</div>`;
+const B = (x, y, w, h, st) => `<div class="bx" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${st}"></div>`;
+const SVG = (x, y, w, h, vb, inner) => `<svg class="bx" style="left:${x}px;top:${y}px" width="${w}" height="${h}" viewBox="${vb}">${inner}</svg>`;
+const searchIc = (cx, cy, r, c = '#6b7280', sw = 3) => SVG(cx - r * 1.6, cy - r * 1.6, r * 3.2, r * 3.2, `0 0 ${r * 3.2} ${r * 3.2}`, `<circle cx="${r * 1.45}" cy="${r * 1.45}" r="${r}" fill="none" stroke="${c}" stroke-width="${sw}"/><path d="M${r * 2.2} ${r * 2.2} L${r * 2.9} ${r * 2.9}" stroke="${c}" stroke-width="${sw}" stroke-linecap="round"/>`);
+const calIc = (cx, cy, s, c = '#4b5563') => SVG(cx - s / 2, cy - s / 2, s, s, '0 0 24 24', `<rect x="3.5" y="5" width="17" height="15" rx="2.5" fill="none" stroke="${c}" stroke-width="1.6"/><path d="M3.5 9.5h17M8 3v4M16 3v4" stroke="${c}" stroke-width="1.6" stroke-linecap="round"/><path d="M7 13h2M11 13h2M15 13h2M7 16.5h2M11 16.5h2" stroke="${c}" stroke-width="1.4"/>`);
+const refreshIc = (cx, cy, s, c = '#fff', sw = 2.4) => SVG(cx - s / 2, cy - s / 2, s, s, '0 0 24 24', `<path d="M5.5 12a6.5 6.5 0 1 0 2-4.7" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round"/><path d="M7.8 3.6v4.1H3.7" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>`);
+const pencilIc = (cx, cy, s, c = '#374151') => SVG(cx - s / 2, cy - s / 2, s, s, '0 0 24 24', `<path d="M15.5 4.5l4 4L9 19H5v-4z" fill="none" stroke="${c}" stroke-width="1.7" stroke-linejoin="round"/><path d="M13.5 6.5l4 4" stroke="${c}" stroke-width="1.7"/>`);
+const logoRing = (cx, cy, r) => `<div class="bx" style="left:${cx - r}px;top:${cy - r}px;width:${2 * r}px;height:${2 * r}px;border-radius:50%;background:conic-gradient(from -30deg,#e8384f,#f29b30 25%,#f4d03f 40%,#5cc36a 60%,#2fb3b3 78%,#c03fa8 92%,#e8384f)"></div>
+  <div class="bx" style="left:${cx - r * .62}px;top:${cy - r * .62}px;width:${r * 1.24}px;height:${r * 1.24}px;border-radius:50%;background:#fff"></div>
+  ${SVG(cx - r * .6, cy - r * .6, r * 1.2, r * 1.2, '0 0 24 24', '<path d="M12 5v7.5h5" fill="none" stroke="#1f2937" stroke-width="2.6" stroke-linecap="round"/>')}`;
+let MARK = '';
+// ---------- k0-6: search close-up ----------
+function sceneSearch(k) {
+  const typed = k >= 6 ? 'AMSTERDAM' : k >= 2 ? 'AMSTERDA' : 'AMSTERD';
+  let h = B(0, 0, 1440, 1080, 'background:#fff');
+  h += T(224, 84, 121, 'Singapore Time Converter', 'font-weight:500;letter-spacing:-.4px');
+  h += B(230, 185, 1045, 130, 'border-radius:30px;background:#f4f5f7;border:2px solid #e6e8eb');
+  h += B(234, 189, 368, 122, 'border-radius:27px 0 0 27px;background:#fafbfc;border-right:2px solid #e6e8eb');
+  h += T(287, 270, 50, 'Converter', 'color:#2f6fa8;font-weight:400;letter-spacing:1px') + T(660, 268, 50, 'Singapore, Singapore', 'color:#6b7280;letter-spacing:.6px');
+  h += B(240, 405, 1300, 900, 'border-radius:28px 0 0 0;border:2px solid #eceef1;border-right:none');
+  h += B(297, 463, 1250, 164, 'border-radius:30px;border:4px solid #3e6fa6;background:#fff');
+  h += searchIc(380, 545, 21, '#6b7280', 4);
+  h += T(472, 570, 52, typed, 'letter-spacing:2.4px;color:#1f2937');
+  h += `<div class="t" style="left:${472 + typedW(typed)}px;top:508px;width:4px;height:70px;background:#1d3d66"></div>`;
+  h += B(242, 688, 1300, 2, 'background:#eceef1');
+  h += T(315, 862, 86, 'Singapore', 'font-weight:500;letter-spacing:-.3px');
+  h += T(315, 968, 56, 'Singapore &nbsp;|&nbsp; <span class="blu">SGT</span>', 'color:#6b7280;letter-spacing:1px');
+  h += B(315, 1050, 1200, 44, 'border-radius:22px;background:linear-gradient(90deg,#335f86 0,#3b6890 820px,#c9bf8f 1000px,#d8c88f 1200px)');
+  return h;
+}
+let _cv; function typedW(s) { _cv = _cv || document.createElement('canvas').getContext('2d'); _cv.font = "52px -apple-system,'SF Pro Text','Helvetica Neue',sans-serif"; return _cv.measureText(s).width + s.length * 2.4; }
+// ---------- k7-18: wide page ----------
+const PAGES = [
+  [7, 'Amsterdam', 'Amsterdam, Netherlands', 'Amsterdam, Netherlands', '3:00 pm – 6:00 pm', 'Mon, Oct 19 · Works for both places'],
+  [10, 'London', 'London, United Kingdom', 'London, United Kingdom', '4:00 pm – 6:00 pm', 'Mon, Oct 19 · Works for both places'],
+  [14, 'New York City', 'New York City, NY, USA', 'New York City, NY, USA', '7:00 pm – 8:00 pm', 'Mon, Oct 19 · No shared working hours · 2h late'],
+];
+function scenePage(k) {
+  let P = PAGES[0]; for (const p of PAGES) if (k >= p[0]) P = p;
+  const [, city, crumb, tab2, best, note] = P;
+  let h = B(0, 0, 1440, 1080, 'background:#fff') + B(0, 0, 1440, 16, 'background:#000');
+  h += B(0, 16, 1440, 110, 'background:#f5f5f6') + B(0, 125, 1440, 66, 'background:#ebebed;border-bottom:1px solid #dadbdd');
+  h += SVG(17, 58, 42, 32, '0 0 21 16', '<rect x="1" y="1" width="19" height="14" rx="3" fill="none" stroke="#3a3a3c" stroke-width="1.5"/><path d="M7.5 1v14" stroke="#3a3a3c" stroke-width="1.5"/><path d="M3 4.5h2.5M3 7h2.5" stroke="#3a3a3c" stroke-width="1.2"/>');
+  h += SVG(84, 62, 24, 24, '0 0 24 24', '<path d="M5 9l7 7 7-7" fill="none" stroke="#3a3a3c" stroke-width="2.4" stroke-linecap="round"/>');
+  h += SVG(174, 52, 30, 40, '0 0 15 20', '<path d="M11 2L3 10l8 8" fill="none" stroke="#3a3a3c" stroke-width="2" stroke-linecap="round"/>');
+  h += SVG(248, 52, 30, 40, '0 0 15 20', '<path d="M4 2l8 8-8 8" fill="none" stroke="#bdbdc0" stroke-width="2" stroke-linecap="round"/>');
+  h += `<div class="bx" style="left:825px;top:50px;width:40px;height:40px;border-radius:50%;background:#1f3f8f"></div>` + SVG(833, 60, 24, 20, '0 0 24 20', '<rect x="2" y="2" width="20" height="16" rx="2" fill="none" stroke="#fff" stroke-width="2"/><path d="M2 3l10 8 10-8" fill="none" stroke="#fff" stroke-width="2"/>');
+  h += SVG(918, 54, 26, 32, '0 0 13 16', '<rect x="1" y="1" width="11" height="14" rx="1.5" fill="none" stroke="#8e8e93" stroke-width="1.2"/><path d="M3.5 5h6M3.5 7.5h6M3.5 10h6" stroke="#8e8e93" stroke-width="1"/>');
+  h += `<div class="bx" style="left:647px;top:141px;width:30px;height:30px;border-radius:7px;background:#111;display:flex;align-items:center;justify-content:center">${MARK.replace('width="375" height="411"', 'width="17" height="19"')}</div>`;
+  h += T(689, 166, 27, 'Chatly', 'color:#1d1d1f');
+  h += logoRing(340, 266, 30) + T(388, 277, 30, 'TimeZone Converter', 'font-weight:500;color:#1f2937');
+  h += B(0, 329, 1440, 2, 'background:#eceef1');
+  h += T(308, 380, 22, `Home &nbsp;/&nbsp;&nbsp; Converter &nbsp;/&nbsp;&nbsp; Singapore, Singapore to ${crumb}`, 'color:#6b7280;letter-spacing:.6px');
+  h += T(308, 500, 64, `Singapore to ${city} Time Converter`, 'font-weight:500;letter-spacing:-.9px');
+  h += B(310, 551, 1300, 68, 'border-radius:14px;background:#f5f6f8;border:2px solid #e8eaed');
+  h += B(313, 554, 180, 62, 'border-radius:12px;background:#fbfcfd;border:1px solid #e3e5e8');
+  h += T(337, 594, 26, 'Converter', 'color:#2f6fa8;font-weight:500;letter-spacing:.5px');
+  h += T(522, 593, 26, 'Time Difference', 'color:#6b7280;letter-spacing:.5px') + T(781, 593, 26, 'Table', 'color:#6b7280;letter-spacing:.5px') + T(904, 592, 26, 'Singapore, Singapore', 'color:#6b7280;letter-spacing:.5px') + T(1234, 591, 26, tab2, 'color:#6b7280;letter-spacing:.5px');
+  h += B(310, 640, 1300, 600, 'border-radius:20px 0 0 0;border:2px solid #eceef1;border-right:none');
+  h += B(343, 685, 663, 83, 'border-radius:14px;border:2px solid #d4d7dc;background:#fff') + searchIc(385, 729, 10, '#6b7280', 2.2) + T(430, 740, 27, 'Add time zone, city, or town', 'color:#6b7280;letter-spacing:.6px');
+  h += B(1070, 683, 358, 82, 'border-radius:14px;border:2px solid #cfd3d8;background:#fff') + T(1097, 734, 28, 'Oct 18, 2026', 'color:#1f2937;letter-spacing:.8px') + calIc(1387, 723, 34);
+  h += B(312, 800, 1300, 2, 'background:#eceef1');
+  h += T(352, 846, 27, `Best time: ${best}`, 'color:#2f6fa8;font-weight:400;letter-spacing:.5px') + T(796, 843, 27, note, 'color:#6b7280;letter-spacing:.5px');
+  h += B(312, 878, 1300, 2, 'background:#eceef1');
+  h += T(351, 964, 40, 'Singapore', 'font-weight:500') + T(351, 1015, 26, 'Singapore &nbsp;|&nbsp; <span class="blu">SGT</span>', 'color:#6b7280;letter-spacing:.6px');
+  h += B(351, 1056, 1200, 22, 'border-radius:11px;background:linear-gradient(90deg,#335f86 0,#3b6890 420px,#cdbf8d 520px,#d8c88f 1000px)');
+  return h;
+}
+// ---------- k19-28: blurred pan along the controls ----------
+function panLayer(k, knobX, timeStr) {
+  let h = B(-200, 25, 3200, 2, 'background:#e6e8eb') + B(-200, 318, 3200, 2, 'background:#e6e8eb') + B(-200, 955, 3200, 2, 'background:#e6e8eb');
+  h += B(120, 85, 780, 200, 'border-radius:30px;border:3px solid #5b6068;background:#fff') + T(165, 213, 66, 'Oct 18, 2026', 'color:#2b2f36;letter-spacing:1.5px') + calIc(815, 178, 64, '#3d434b');
+  h += B(1140, 65, 360, 180, 'border-radius:30px;background:#2f6fa8') + refreshIc(1215, 155, 76, '#fff', 2.6) + T(1285, 178, 62, 'Now', 'color:#fff;font-weight:500');
+  h += B(1530, 65, 320, 180, 'border-radius:30px;border:2px solid #e2e5e9') + pencilIc(1610, 150, 60) + T(1665, 172, 60, 'Edit', 'color:#1f2937');
+  h += TR(2110, 495, 110, timeStr, 'font-weight:500;color:#1f2329');
+  h += TR(2110, 600, 48, 'UTC+8 &nbsp;|&nbsp; Sun, Oct 18', 'color:#6b7280');
+  h += B(-200, 745, 3200, 42, 'border-radius:21px;background:linear-gradient(90deg,#d3c38c 0,#d3c38c 1350px,#9fae9f 1500px,#34628c 1700px,#34628c 3000px)');
+  h += [375, 840, 1290, 1755].map((x, i) => T(x - 45, 885, 44, ['12pm', '3pm', '6pm', '9pm'][i], 'color:#6b7280')).join('');
+  h += `<div class="bx" style="left:${knobX - 80}px;top:722px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.92);box-shadow:0 2px 10px rgba(0,0,0,.25)"></div><div class="bx" style="left:${knobX - 22}px;top:744px;width:44px;height:44px;border-radius:50%;border:4px solid #2e3238"></div>`;
+  return h;
+}
+function scenePan(k) {
+  const off = -60 * (k - 21), knobX = 680 + (k - 21) * 74;
+  const mins = Math.floor((14 * 60 + (k - 19) * 19.3) / 15) * 15;   // ref: ~3:45 at k25, 4:45 at k28
+  const hh = Math.floor(mins / 60), mm = mins % 60; const timeStr = `${((hh + 11) % 12) + 1}:${String(mm).padStart(2, '0')} pm`;
+  const lay = panLayer(k, knobX, timeStr);
+  let h = B(0, 0, 1440, 1080, 'background:#fff');
+  const OFFS = [-27, -18, -9, 0, 9, 18, 27];  // motion-blur smear, centred (camera moves ~60 px/frame)
+  OFFS.forEach((o, i) => { h += `<div class="bx" style="left:0;top:0;width:1440px;height:1080px;opacity:${1 / (i + 1)};transform:translateX(${off + o}px) rotate(-2.1deg);transform-origin:720px 540px;background:${i ? 'transparent' : '#fff'}">${lay}</div>`; });
+  return `<div style="position:absolute;inset:0;filter:blur(4px)">${h}</div>`;
+}
+// ---------- k29-40: time card ----------
+const CARD = { 29: ['7:45 pm', 495], 30: ['8:00 pm', 535], 31: ['8:15 pm', 580], 32: ['8:30 pm', 625, '8:15 pm'], 33: ['9:30 pm', 720, '9:15 pm'], 34: ['10:15 pm', 895],
+  35: ['10:45 pm', 930, '10:30 pm'], 36: ['10:45 pm', 960], 37: ['11:00 pm', 1000], 38: ['11:15 pm', 1035], 39: ['11:30 pm', 1065, '11:15 pm'], 40: ['11:45 pm', 1105] };
+function sceneCard(k) {
+  const [tm, kx, ghost] = CARD[k];
+  let h = B(0, 0, 1440, 1080, 'background:#fff');
+  h += B(-60, 125, 1260, 1000, 'border-radius:0 34px 0 0;border:2px solid #e8eaed;background:#fff');
+  h += B(-60, 420, 1260, 2, 'background:#eceef1') + B(-60, 1030, 1260, 2, 'background:#eceef1');
+  h += B(77, 190, 328, 177, 'border-radius:28px;background:#2f6fa8') + refreshIc(162, 280, 74, '#fff', 2.3) + T(233, 300, 58, 'Now', 'color:#fff;font-weight:500');
+  h += B(435, 188, 315, 172, 'border-radius:28px;border:2px solid #e4e7ea') + pencilIc(525, 275, 68) + T(590, 297, 58, 'Edit', 'color:#1f2937');
+  h += B(785, 185, 340, 172, 'border-radius:28px;border:2px solid #e4e7ea') + T(840, 292, 56, 'More', 'color:#1f2937') + SVG(1018, 256, 36, 30, '0 0 24 20', '<path d="M5 7l7 7 7-7" fill="none" stroke="#4b5563" stroke-width="2" stroke-linecap="round"/>');
+  h += SVG(1126, 458, 44, 44, '0 0 24 24', '<path d="M5 5l14 14M19 5L5 19" stroke="#4b5563" stroke-width="1.8" stroke-linecap="round"/>');
+  if (ghost) h += TR(1042, 610, 124, ghost, 'font-weight:600;color:#111;opacity:.3');
+  h += TR(1042, 610, 124, tm, `font-weight:600;color:#111;${ghost ? 'opacity:.75' : ''}`);
+  h += TR(1045, 722, 62, 'UTC+8 | Sun, Oct 18', 'color:#6b7280;letter-spacing:1px');
+  h += B(-60, 803, 1175, 45, 'border-radius:23px;background:linear-gradient(90deg,#d7c98f 0,#d3c690 60px,#a6b0a0 200px,#4c7499 360px,#3f6a92 420px,#3f6a92 100%)');
+  for (const x of [75, 373, 523, 822, 970, 1118]) h += B(x - 1, 866, 2, 14, 'background:#b9bec5');
+  for (const x of [225, 672]) h += B(x - 1.5, 866, 3, 30, 'background:#9aa0a8');
+  h += T(173, 960, 46, '6pm', 'color:#6b7280') + T(620, 958, 46, '9pm', 'color:#6b7280');
+  if (ghost) h += `<div class="bx" style="left:${kx - 45 - 30}px;top:785px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.45)"></div>`;
+  h += `<div class="bx" style="left:${kx - 40}px;top:786px;width:80px;height:80px;border-radius:50%;background:rgba(255,255,255,.93);box-shadow:0 2px 9px rgba(0,0,0,.22);border:1px solid #e3e5e8"></div>`;
+  if (k === 40) h += `<div class="bx" style="left:${kx + 18}px;top:866px;width:60px;height:60px;border-radius:50%;border:5px solid #3a3f46;background:rgba(255,255,255,.6)"></div>`;
+  else h += SVG(kx + 8, 862, 64, 74, '0 0 20 23', '<path d="M6 10V3.2a1.6 1.6 0 013.2 0V9l.1-1.6a1.5 1.5 0 013 .1V9.5l.1-.9a1.5 1.5 0 013 .2v1.5l.1-.4a1.4 1.4 0 012.8.4v5.2c0 3.3-2.4 6-6 6h-1.2c-2 0-3.4-.9-4.6-2.6L3 14.2a1.5 1.5 0 012.3-1.9L6 13.3z" fill="#fff" stroke="#111" stroke-width="1.1" stroke-linejoin="round"/>');
+  // neighbouring card on the right
+  h += B(1336, 120, 300, 1100, 'border-radius:12px 0 0 0;border:3px solid #262a30;background:#fff');
+  h += SVG(1352, 132, 56, 64, '0 0 24 27', '<path d="M12 1.5l9 3.5v7c0 6.2-3.9 11-9 13-5.1-2-9-6.8-9-13V5z" fill="#2c4f86"/><circle cx="12" cy="10" r="3.3" fill="#fff"/><path d="M6.5 18c1-3 3-4.3 5.5-4.3s4.5 1.3 5.5 4.3" fill="#fff"/><path d="M9.5 19.5l2 2 4-4" stroke="#6fd09a" stroke-width="1.8" fill="none"/>');
+  h += B(1431, 226, 14, 66, 'background:#15181d') + B(1428, 535, 30, 64, 'border-radius:15px;border:5px solid #15181d');
+  return h;
+}
+window.ready = (async () => { MARK = window.CHATLY_MARK.replace(/fill="#000"/g, 'fill="#fff"'); document.getElementById('stage').style.opacity = CM.guideOpacity(); })();
+window.render = async t => {
+  await CM.guideAt(t);
+  const k = Math.min(40, Math.round(t * 24));
+  let h, dx = 0, dy = 0;
+  if (k <= 6) { h = sceneSearch(k); dx = -k * 0.6; dy = Math.sin(k) * 1.2; }
+  else if (k <= 18) { h = scenePage(k); dx = Math.sin(k * 1.3) * 1.5; dy = (k - 7) * 0.15; }
+  else if (k <= 28) h = scenePan(k);
+  else { h = sceneCard(k); dx = Math.sin(k * .9) * 1.5; dy = Math.cos(k * .7); }
+  scn.innerHTML = `<div style="position:absolute;inset:0;transform:translate(${dx}px,${dy}px);filter:blur(${k <= 18 ? 0.7 : k >= 29 ? 0.6 : 0}px)">${h}</div>`;
+};
+</script></body></html>

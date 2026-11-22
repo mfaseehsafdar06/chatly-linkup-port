@@ -18,11 +18,10 @@ ramp=np.clip((rr-.55)/.6,0,1)[...,None]; vg=(1-vig*rr**2)[...,None]
 rng=np.random.default_rng(5)
 tex=cv2.GaussianBlur(rng.normal(0,1,(H,W)).astype(np.float32),(0,0),40); tex=(tex/tex.std())[...,None]
 fib=cv2.GaussianBlur(rng.normal(0,1,(H,W)).astype(np.float32),(0,0),1.3); fib=(fib/fib.std())[...,None]
-def reflab(r0,r1):
+def refframes(r0,r1):
     tmp=f'{d}/tmp/_ref'; os.makedirs(tmp,exist_ok=True); [os.remove(x) for x in glob.glob(tmp+'/*')]
     subprocess.run(['ffmpeg','-v','error','-i',REF,'-vf',f"select=between(n\\,{r0}\\,{r1}),scale=480:360",'-fps_mode','passthrough',f'{tmp}/r%03d.png'],check=True)
-    L=[cv2.cvtColor(cv2.imread(x),cv2.COLOR_BGR2LAB).reshape(-1,3).astype(np.float32) for x in sorted(glob.glob(tmp+'/*.png'))]
-    return np.concatenate(L)
+    return sorted(glob.glob(tmp+'/*.png'))
 def look(im):
     f=im.astype(np.float32)
     s1=cv2.GaussianBlur(f,(0,0),soft) if soft>0 else f; s2=cv2.GaussianBlur(f,(0,0),edge)
@@ -30,19 +29,20 @@ def look(im):
     o=o*(1+texa*tex+texa*.5*fib)*vg*lift
     return o
 GR={}
-for s in segs:
-    k0,k1,r0,r1=map(int,s.split(':')); R=reflab(r0,r1)
-    M=[]
+for s_ in segs:
+    k0,k1,r0,r1=map(int,s_.split(':')); RF=refframes(r0,r1)
     ks=[int(os.path.basename(x)[1:5]) for x in fs]; ks=[k for k in ks if k0<=k<=k1]; ks=ks[::max(1,len(ks)//12)]
+    R=[];M=[]
     for k in ks:
         im=cv2.imread(f'{F}/k{k:04d}.png',cv2.IMREAD_UNCHANGED)
-        if im is None: continue
-        rgb=np.clip(look(im[...,:3]),0,255).astype(np.uint8)
-        M.append(cv2.cvtColor(cv2.resize(rgb,(480,360),interpolation=cv2.INTER_AREA),cv2.COLOR_BGR2LAB).reshape(-1,3).astype(np.float32))
-    M=np.concatenate(M); R=R.astype(np.float64); M=M.astype(np.float64); mr,sr=R.mean(0),R.std(0); mm,sm=M.mean(0),M.std(0)
-    ratio=np.clip(sr/(sm+1e-6),ratio_lo,ratio_hi)
+        ri=min(len(RF)-1,round((k-k0)*(r1-r0)/max(1,k1-k0))); ref=cv2.imread(RF[ri])
+        rgb=np.clip(look(im[...,:3]),0,255).astype(np.uint8); sm=cv2.resize(rgb,(480,360),interpolation=cv2.INTER_AREA)
+        msk=(cv2.resize(im[...,3],(480,360))>220) if im.shape[2]==4 else np.ones((360,480),bool)
+        M.append(cv2.cvtColor(sm,cv2.COLOR_BGR2LAB)[msk].astype(np.float64)); R.append(cv2.cvtColor(ref,cv2.COLOR_BGR2LAB)[msk].astype(np.float64))
+    R=np.concatenate(R);M=np.concatenate(M); mr,sr=R.mean(0),R.std(0); mm,sm_=M.mean(0),M.std(0)
+    ratio=np.clip(sr/(sm_+1e-6),ratio_lo,ratio_hi)
     for k in range(k0,k1+1): GR[k]=(mm,mr,ratio)
-    print('seg',s,'ref',mr.round(1),'ours',mm.round(1),'ratio',ratio.round(2))
+    print('seg',s_,'ref',mr.round(1),'ours',mm.round(1),'ratio',ratio.round(2))
 for p in fs:
     k=int(os.path.basename(p)[1:5]); im=cv2.imread(p,cv2.IMREAD_UNCHANGED)
     rgb=look(im[...,:3])

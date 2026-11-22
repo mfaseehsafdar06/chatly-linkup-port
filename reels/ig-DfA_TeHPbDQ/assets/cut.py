@@ -4,6 +4,7 @@ os.makedirs('cut',exist_ok=True)
 WHOLE={'GPT-07','GPT-10'}          # keep as full plates (zoomed/tracked), no cut
 idx={}
 ids=sys.argv[1:] or sorted(os.path.basename(p)[:6] for p in glob.glob('gpt/GPT-??.png'))
+WHOLE.add('F-04')
 for gid in ids:
     im=cv2.imread(f'gpt/{gid}.png',cv2.IMREAD_UNCHANGED)
     if im is None: continue

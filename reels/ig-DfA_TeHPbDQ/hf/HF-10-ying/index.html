@@ -36,15 +36,16 @@ function drawUI() {
   g.globalCompositeOperation = 'destination-out'; rr(T.x, T.y, T.w, T.h, T.r); g.fill(); g.globalCompositeOperation = 'source-over';
 }
 const UM = [[0, 'Um'], [3, 'UmM'], [5, 'UmMM'], [7, 'UmMMm'], [9, 'UmMMmM'], [11, 'UmMMmMm'], [13, 'UmMMmMmm']];
-let threeAM = '';
+let threeAM = '', umSX = 1;
 window.ready = (async () => {
   await CM.fonts(); await document.fonts.load('700 100px IB'); MEET.injectCSS();
   if (L === 'ui') drawUI();
   // fit 3AM: cap 225..690, x 87..1347
-  const fs = 465 / 0.727, s = document.createElement('span'); s.className = 'w'; s.style.fontSize = fs + 'px'; s.textContent = '3AM'; s.style.letterSpacing = '-0.02em';
+  const fs = 439 / 0.727, s = document.createElement('span'); s.className = 'w'; s.style.fontSize = fs + 'px'; s.textContent = '3AM'; s.style.letterSpacing = '-0.02em';
   document.body.appendChild(s); const wpx = s.getBoundingClientRect().width; s.remove();
-  const sx = 1260 / wpx;
-  threeAM = `<div class="w" style="left:87px;top:${690 - fs * 0.864}px;font-size:${fs}px;letter-spacing:-0.02em;transform:scaleX(${sx});transform-origin:0 0;text-shadow:none">3AM</div>`;
+  const sx = 1240 * 1.0404 / wpx;
+  { const u = document.createElement('span'); u.className = 'w'; u.style.fontSize = '130px'; u.textContent = 'UmMMmMmm'; document.body.appendChild(u); umSX = 1000 / u.getBoundingClientRect().width; u.remove(); }
+  threeAM = `<div class="w" style="left:68px;top:${679 - fs * 0.864}px;font-size:${fs}px;letter-spacing:-0.02em;transform:scaleX(${sx});transform-origin:0 0;text-shadow:none;-webkit-text-stroke:10px #fff">3AM</div>`;
   document.getElementById('stage').style.opacity = CM.guideOpacity();
 })();
 window.render = async t => {
@@ -52,7 +53,7 @@ window.render = async t => {
   const k = Math.round(t * 24); let h = '';
   if (L === 'ui') {
     h += `<div class="mt-lbl" style="left:108px;top:815px;transform:translateY(-78%);font-size:66px;font-weight:450;color:#f2f2f2;text-shadow:0 2px 5px rgba(0,0,0,.45)">Ying</div>`;
-    if (k < 15) { let s = ''; for (const [f, w] of UM) if (k >= f) s = w; h += `<div class="w" style="left:720px;top:${304 - 115 * 0.864}px;font-size:115px;transform:translateX(-50%)">${s}</div>`; }
+    if (k < 15) { let s = ''; for (const [f, w] of UM) if (k >= f) s = w; h += `<div class="w" style="left:720px;top:${315 - 130 * 0.864}px;font-size:130px;transform:translateX(-50%) scaleX(${umSX});transform-origin:50% 0">${s}</div>`; }
     else h += `<div class="w" style="left:155px;top:${198 - 68 * .864}px;font-size:68px">its</div>`;
   } else if (k >= 35) h += threeAM;
   dom.innerHTML = h;

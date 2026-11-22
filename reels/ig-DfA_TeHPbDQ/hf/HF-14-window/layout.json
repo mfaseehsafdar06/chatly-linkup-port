@@ -1,0 +1,135 @@
+{
+ "asset": "HF-14",
+ "outputs": {
+  "out/HF-14-window_A.mov": "shots 26-27, ref 32.000-33.958 (f768-f815), 47 frames",
+  "out/HF-14-window_B.mov": "shot 52, ref 70.333-71.542 (f1688-f1717), 29 frames"
+ },
+ "matte": "opaque black everywhere except one transparent window per frame; put the plate/still under it, cover-fit to the window rect (hard edges, no border)",
+ "A": [
+  {
+   "fromAssetFrame": 0,
+   "refFrame": 768,
+   "rect": {
+    "x": 511,
+    "y": 382,
+    "w": 418,
+    "h": 314
+   },
+   "content": "L5 kitchen plate (same clip as shot 25), cover-fit"
+  },
+  {
+   "fromAssetFrame": 27,
+   "refFrame": 795,
+   "rect": {
+    "x": 438,
+    "y": 347,
+    "w": 563,
+    "h": 385
+   },
+   "content": "friend still 1: old group photo (indoor, sitting on floor)"
+  },
+  {
+   "fromAssetFrame": 31,
+   "refFrame": 799,
+   "rect": {
+    "x": 316,
+    "y": 255,
+    "w": 807,
+    "h": 569
+   },
+   "content": "friend still 2: school group photo outdoors (subtitle \"Everytime\" from HF-02)"
+  },
+  {
+   "fromAssetFrame": 35,
+   "refFrame": 803,
+   "rect": {
+    "x": 246,
+    "y": 222,
+    "w": 949,
+    "h": 634
+   },
+   "content": "friend still 3: two girls indoors"
+  },
+  {
+   "fromAssetFrame": 39,
+   "refFrame": 807,
+   "rect": {
+    "x": 172,
+    "y": 176,
+    "w": 1097,
+    "h": 727
+   },
+   "content": "friend still 4: light-leak photo (orange flare on the left)"
+  },
+  {
+   "fromAssetFrame": 43,
+   "refFrame": 811,
+   "rect": {
+    "x": 179,
+    "y": 159,
+    "w": 1081,
+    "h": 762
+   },
+   "content": "friend still 5: night photo, three girls with pink bags"
+  }
+ ],
+ "B": [
+  {
+   "fromAssetFrame": 0,
+   "refFrame": 1688,
+   "rect": {
+    "x": 626,
+    "y": 475,
+    "w": 187,
+    "h": 129
+   },
+   "content": "friend still 6 (group, ok-hands) \u2014 same still in every step, cover-fit"
+  },
+  {
+   "fromAssetFrame": 4,
+   "refFrame": 1692,
+   "rect": {
+    "x": 301,
+    "y": 228,
+    "w": 519,
+    "h": 356
+   },
+   "content": "same still"
+  },
+  {
+   "fromAssetFrame": 8,
+   "refFrame": 1696,
+   "rect": {
+    "x": 294,
+    "y": 60,
+    "w": 796,
+    "h": 542
+   },
+   "content": "same still"
+  },
+  {
+   "fromAssetFrame": 12,
+   "refFrame": 1700,
+   "rect": {
+    "x": 248,
+    "y": 58,
+    "w": 1192,
+    "h": 877
+   },
+   "content": "same still"
+  },
+  {
+   "fromAssetFrame": 16,
+   "refFrame": 1704,
+   "rect": {
+    "x": 0,
+    "y": 0,
+    "w": 1440,
+    "h": 1080
+   },
+   "content": "full frame: the still (continues into shot 53)"
+  }
+ ],
+ "notes": "Word pops and subtitles are HF-01/HF-02 and sit above this matte (in the ref, words overlap the window edges). Needs: L5 kitchen plate + 6 friend stills (not generated). Part B: once full frame (f1704) the still itself punches in, in steps at f1708 and f1713 (scale ~1.25x then ~1.6x toward the girl doing ok-hands, lower centre) - do that on the still layer.",
+ "compare_note": "hf/lib/compare.py's reference column shows the frame AFTER k (ffmpeg seek lands on the next pts); qa/guide frames are frame-exact (k = f - shotStartFrame)."
+}

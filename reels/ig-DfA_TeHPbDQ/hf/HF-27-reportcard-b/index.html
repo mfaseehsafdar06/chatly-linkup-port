@@ -1,0 +1,51 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script>
+// HF-27 Report card sequence B. Shots 49-50, ref frames 1547..1623 (64.46-67.67 s), 77 frames. ALPHA with the photo
+// window as a transparent HOLE (quad per frame in out/HF-27-reportcard-b-hole.json). Same world as HF-06 (card fitted to WIN).
+// ======== CONFIG ========
+const C='../../assets/cut/';
+const WIN={x0:502,y0:405,x1:892,y1:697};
+const WALL='#E4E1CC';
+const CAM=[[1547,502,405,675,484,2.0,0],[1584,502,405,671,488,2.0,0],
+ [1585,411.6,781.8,220,360,1.8,0],[1623,411.6,781.8,216,363,1.8,0]];
+const CUTS=[1547,1585];
+const FAIL={cx:513,cy:461,w:238,h:178,rot:-45};
+const PASS={cx:535,cy:436,w:236,h:186,rot:-10,on:1557};
+const SETS={x0:452,y0:788,x1:946,y1:982,rot:1,on:1587};
+// sticker slap keys by ref frame: [dxWorld, dyWorld, rotDeg, scale, blurVecScreen]
+const PK={1557:[79,252,-14,1.1,[-60,-300]],1558:[30,90,-12,1.06,[-60,-200]],1559:[8,15,-10,1.02,[0,-40]]};
+const SK={1587:[216,86,3,1.08,[-220,-90]],1588:[20,8,1,1.02,[-70,-25]]};
+// hand (H0) keys: [stickerKey, dxWorld, dyWorld (knuckle anchor from sticker centre), rotDeg, blurVecScreen]
+const HK={1557:['P',70,300,40,[-60,-300]],1558:['P',10,170,42,[-60,-200]],1559:['P',-20,95,43,[0,-40]],1560:['P',-25,90,43,null],1561:['P',-25,90,43,null],
+ 1562:['P',-70,100,45,[-160,20]],1563:['P',-140,115,46,[-250,30]],1564:['P',-230,135,47,[-300,30]],1565:['P',-330,150,47,[-300,30]],
+ 1587:['S',60,80,58,[-220,-90]],1588:['S',-110,40,60,[-70,-25]],1589:['S',-125,38,60,null],1590:['S',-125,38,60,null],1591:['S',-125,38,60,null],1592:['S',-125,38,60,null],
+ 1593:['S',-120,150,64,[-250,60]],1594:['S',-260,200,66,[-300,60]],1595:['S',-400,250,68,[-300,60]]};
+const HAND={P:400,S:420,anchor:[488,521]};         // H0 drawn width (world px) per slap
+// ========================
+const g=document.getElementById('c').getContext('2d');let IM,DET,CARD;
+window.ready=(async()=>{IM=await X.load({CARD:C+'GPT-03_00.png',FAIL:C+'GPT-04_00.png',PASS:C+'GPT-04_01.png',SETS:C+'GPT-04_02.png',H0:'../_props/hands/H0.png'});DET=await (await fetch('../_props/detect.json')).json();
+ const d=DET['GPT-03_00'];const cw=(WIN.x1-WIN.x0)/(d[2]-d[0]),ch=(WIN.y1-WIN.y0)/(d[3]-d[1]);CARD={x:WIN.x0-d[0]*cw,y:WIN.y0-d[1]*ch,w:cw,h:ch};})();
+function camAt(f){const seg=CUTS.filter(c=>c<=f).pop(),nx=CUTS.find(x=>x>seg);const keys=CAM.filter(c=>c[0]>=seg&&(nx===undefined||c[0]<nx));return X.track(keys.map(k=>[k[0],k.slice(1)]),f);}
+function applyCam(G,c,J){const [wx,wy,sx,sy,s,r]=c;G.setTransform(1,0,0,1,0,0);G.translate(sx+J.dx,sy+J.dy);G.rotate(r*Math.PI/180+J.rot);G.scale(s,s);G.translate(-wx,-wy);}
+function toScreen(c,J,x,y){const [wx,wy,sx,sy,s,r]=c;const a=r*Math.PI/180+J.rot;return [sx+J.dx+((x-wx)*Math.cos(a)-(y-wy)*Math.sin(a))*s,sy+J.dy+((x-wx)*Math.sin(a)+(y-wy)*Math.cos(a))*s];}
+const jit=t=>HF.jitter(t,6,1.6,0.12);
+const HOLEPAD=2;
+window.hole=t=>{const f=1547+Math.round(t*24),c=camAt(f),J=jit(t);const p=HOLEPAD;return [[WIN.x0-p,WIN.y0-p],[WIN.x1+p,WIN.y0-p],[WIN.x1+p,WIN.y1+p],[WIN.x0-p,WIN.y1+p]].map(q=>toScreen(c,J,q[0],q[1]).map(v=>+v.toFixed(1)));};
+function scene(G,c,J){applyCam(G,c,J);G.fillStyle=WALL;G.fillRect(-3000,-3000,8000,8000);
+ G.save();G.shadowColor='rgba(40,40,20,.25)';G.shadowBlur=10;G.shadowOffsetY=4;G.drawImage(IM.CARD,CARD.x,CARD.y,CARD.w,CARD.h);G.restore();
+ G.save();G.globalCompositeOperation='destination-out';G.fillRect(WIN.x0-HOLEPAD,WIN.y0-HOLEPAD,WIN.x1-WIN.x0+2*HOLEPAD,WIN.y1-WIN.y0+2*HOLEPAD);G.restore();
+ X.draw(G,IM.FAIL,{cx:FAIL.cx,cy:FAIL.cy,w:FAIL.w,h:FAIL.h,rot:FAIL.rot,inset:[.004,.004,.012,.03],shadow:{op:.3,blur:5,dy:2}});}
+function drawPass(G,f,dx,dy){const k=PK[f]||[0,0,PASS.rot,1];X.draw(G,IM.PASS,{cx:PASS.cx+k[0]+dx,cy:PASS.cy+k[1]+dy,w:PASS.w,h:PASS.h,rot:k[2],scale:k[3],inset:[.004,.004,.012,.03],shadow:{op:.32,blur:5,dy:2}});}
+function drawSets(G,f,dx,dy){const k=SK[f]||[0,0,SETS.rot,1];const b=X.box(SETS.x0,SETS.y0,SETS.x1,SETS.y1);X.draw(G,IM.SETS,{cx:b.cx+k[0]+dx,cy:b.cy+k[1]+dy,w:b.w,h:b.h,rot:k[2],scale:k[3],inset:[.003,.004,.006,.03],shadow:{op:.32,blur:5,dy:2}});}
+function drawHand(G,f,dx,dy){const k=HK[f];const o=k[0]==='P'?{cx:PASS.cx,cy:PASS.cy}:X.box(SETS.x0,SETS.y0,SETS.x1,SETS.y1);const s=HAND[k[0]]/IM.H0.width;
+ G.save();G.translate(o.cx+k[1]+dx,o.cy+k[2]+dy);G.rotate(k[3]*Math.PI/180);G.shadowColor='rgba(0,0,0,.35)';G.shadowBlur=14;G.shadowOffsetY=8;
+ G.drawImage(IM.H0,-HAND.anchor[0]*s,-HAND.anchor[1]*s,IM.H0.width*s,IM.H0.height*s);G.restore();}
+function layer(f,c,J,key,fn,keys){const v=keys[f]&&keys[f][4];const s=c[4];if(v)X.mblur(g,v,16,(G,dx,dy)=>{applyCam(G,c,J);fn(G,f,dx/s,dy/s);});else{applyCam(g,c,J);fn(g,f,0,0);}}
+window.render=t=>{const f=1547+Math.round(t*24);g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,1440,1080);const c=camAt(f),J=jit(t);
+ scene(g,c,J);
+ if(f>=PASS.on)layer(f,c,J,'P',drawPass,PK);
+ if(f>=SETS.on)layer(f,c,J,'S',drawSets,SK);
+ if(HK[f]){const hv=HK[f][4],s=c[4];if(hv)X.mblur(g,hv,16,(G,dx,dy)=>{applyCam(G,c,J);drawHand(G,f,dx/s,dy/s);});else{applyCam(g,c,J);drawHand(g,f,0,0);}}
+ g.setTransform(1,0,0,1,0,0);};
+</script></body></html>

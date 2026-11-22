@@ -1,0 +1,145 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="../HF-07-meet/common.js"></script>
+<style>
+  #scn{position:absolute;left:0;top:0;width:1440px;height:1080px;overflow:hidden;background:#111;font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif}
+  .a{position:absolute;box-sizing:border-box}
+  .t{position:absolute;white-space:nowrap;line-height:1}
+  .emo{font-family:'Apple Color Emoji';line-height:1;position:absolute;white-space:nowrap}
+  .pill{position:absolute;border-radius:40px;background:#d6f5cc;display:flex;align-items:center;justify-content:center;gap:10px;color:#5d6b5b}
+</style>
+</head><body><div id="stage"><div id="scn"></div></div>
+<script>
+// HF-15 · Phone group chat (WhatsApp-style), full-frame mp4, real (ungraded) UI colours.
+// PARAMS.part = 'A' (default): shot 30, ref 36.000–37.542 (f864–f901), 37 frames: 30a k0–11 (sent msg + keyboard + rainbow leak), 30b k12–36.
+// PARAMS.part = 'B'          : shot 32, ref 38.250–39.917 (f918–f958), 40 frames.
+// Camera/scroll offsets per frame were template-tracked from the reference (see TRACK tables).
+// Swaps: "baby sean" -> "baby sam", "Yvonne Tai" -> "Mia T." (placeholder avatar photo); bear stickers -> 😭 emoji sticker.
+// Thumb/fingers are code-drawn soft blurred shapes (no plate). No captions (HF-01).
+CM.initGuide();
+const part = CM.P.part || 'A';
+const scn = document.getElementById('scn');
+const T = (x, y, s, txt, st = '') => `<div class="t" style="left:${x}px;top:${y - s * 0.8}px;font-size:${s}px;${st}">${txt}</div>`;
+const TR = (xr, y, s, txt, st = '') => `<div class="t" style="right:${1440 - xr}px;top:${y - s * 0.8}px;font-size:${s}px;${st}">${txt}</div>`;
+const A = (x, y, w, h, st, inner = '') => `<div class="a" style="left:${x}px;top:${y}px;width:${w}px;height:${h}px;${st}">${inner}</div>`;
+const svg = (x, y, w, h, vb, inner) => `<svg class="a" style="left:${x}px;top:${y}px;overflow:visible" width="${w}" height="${h}" viewBox="${vb}">${inner}</svg>`;
+const ticks = (x, y, s = 30, c = '#53bdeb') => svg(x, y - s * .5, s * 1.1, s * .8, '0 0 22 16', `<path d="M1.5 9l3.5 3.5L12 4.5M8 12.5L15.5 4.5" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"/>`);
+const plus = (cx, cy, s, c = '#1f2a2a') => svg(cx - s / 2, cy - s / 2, s, s, '0 0 24 24', `<path d="M12 3v18M3 12h18" stroke="${c}" stroke-width="2" stroke-linecap="round"/>`);
+const stickerIc = (cx, cy, s, c = '#2a2f2f') => svg(cx - s / 2, cy - s / 2, s, s, '0 0 24 24', `<path d="M15.5 21H8a5 5 0 01-5-5V8a5 5 0 015-5h8a5 5 0 015 5v7.5z" fill="none" stroke="${c}" stroke-width="1.8"/><path d="M21 15.5h-2.5a3 3 0 00-3 3V21" fill="none" stroke="${c}" stroke-width="1.8"/>`);
+const camIc = (cx, cy, s, c = '#2a2f2f') => svg(cx - s / 2, cy - s / 2, s, s, '0 0 24 24', `<path d="M3 8.5a2 2 0 012-2h2.5l1.5-2h6l1.5 2H19a2 2 0 012 2V18a2 2 0 01-2 2H5a2 2 0 01-2-2z" fill="none" stroke="${c}" stroke-width="1.7" stroke-linejoin="round"/><circle cx="12" cy="13" r="3.6" fill="none" stroke="${c}" stroke-width="1.7"/>`);
+const micIc = (cx, cy, s, c = '#2a2f2f') => svg(cx - s / 2, cy - s / 2, s, s, '0 0 24 24', `<rect x="8.5" y="2.5" width="7" height="12" rx="3.5" fill="none" stroke="${c}" stroke-width="1.7"/><path d="M5.5 11a6.5 6.5 0 0013 0M12 17.5V21" fill="none" stroke="${c}" stroke-width="1.7" stroke-linecap="round"/>`);
+const fwd = (cx, cy, r) => A(cx - r, cy - r, 2 * r, 2 * r, 'border-radius:50%;background:rgba(235,235,235,.38)') + svg(cx - r * .5, cy - r * .5, r, r, '0 0 24 24', '<path d="M13 5l7 7-7 7v-4.2c-5 0-8.3 1.6-10.5 5 1-5 4-9.8 10.5-10.7z" fill="rgba(255,255,255,.9)"/>');
+const clock = (cx, cy, s, c = '#7d887b') => svg(cx - s / 2, cy - s / 2, s, s, '0 0 24 24', `<circle cx="12" cy="12" r="9" fill="none" stroke="${c}" stroke-width="2"/><path d="M12 7v5.5l3.5 2" fill="none" stroke="${c}" stroke-width="2" stroke-linecap="round"/>`);
+const sticker = (cx, cy, s) => `<div class="emo" style="left:${cx - s / 2}px;top:${cy - s / 2}px;font-size:${s}px;filter:drop-shadow(0 0 0 #fff) drop-shadow(5px 0 0 #fff) drop-shadow(-5px 0 0 #fff) drop-shadow(0 5px 0 #fff) drop-shadow(0 -5px 0 #fff) drop-shadow(0 3px 6px rgba(0,0,0,.25))">😭</div>`;
+const sunset = (st = '') => A(-200, -300, 1900, 1700, `background:linear-gradient(180deg,#b55a1c 0%,#cf7428 22%,#e08d34 38%,#d97b2c 55%,#c4661f 75%,#a9541a 100%);${st}`,
+  [[120, 0.9], [330, .6], [520, .75], [760, .5], [980, .7], [1180, .55], [1380, .6]].map(([y, o], i) => `<div class="a" style="left:${-100 + (i % 3) * 200}px;top:${y}px;width:${1500 + i * 60}px;height:${26 + (i % 2) * 18}px;border-radius:50%;background:rgba(255,214,150,${o * .55});filter:blur(14px)"></div>`).join(''));
+// ---------------- shot 30a ----------------
+const TA_SCREEN = [[2, 11], [2, 11], [1, 10], [0, 7], [0, 4], [0, 0], [2, -3], [4, -4], [6, -4], [8, -2], [9, 0], [9, 1]];   // Q-key track
+const TA_MSG = [76, 76, 30, 1, 0, 0, 0, 0, 0, 0, 0, 0];                                                                     // messages scroll (today - Q)
+function shot30a(k) {
+  const [dx, dy] = TA_SCREEN[k], my = TA_MSG[k];
+  let msg = '';
+  msg += sticker(940, 40, 300) + fwd(675, 32, 48);
+  msg += `<div class="pill" style="left:900px;top:195px;width:225px;height:70px;font-size:31px">1:23 PM ${ticks(0, 0).replace('class="a" style="left:0px;top:-15px;overflow:visible"', 'style="overflow:visible"')}</div>`;
+  msg += A(450, 385, 295, 52, 'border-radius:26px;background:rgba(238,244,234,.95)') + T(546, 422, 32, 'Today', 'font-weight:600;color:#2d3a33;letter-spacing:.5px');
+  msg += A(305, 478, 815, 137, 'border-radius:40px 40px 10px 40px;background:#d9fdd3') + svg(1100, 588, 40, 30, '0 0 40 30', '<path d="M0 0h18c2 14 10 22 22 28C22 30 8 26 0 18z" fill="#d9fdd3"/>');
+  msg += T(338, 543, 40, 'GUYS CAN WE MEET UP PLSPLSPLS', 'color:#1d2a1f;letter-spacing:1.2px');
+  msg += TR(1040, 602, 29, '4:02 PM', 'color:#6f7d6c;letter-spacing:.6px') + (k < 9 ? clock(1067, 592, 26) : ticks(1052, 594, 26, '#7d887b'));
+  let h = `<div class="a" style="left:0;top:0;width:1440px;height:1080px;transform:translate(${dx}px,${dy}px)">`;
+  h += A(30, -40, 1140, 1200, 'overflow:hidden;background:#000', `<div class="a" style="left:-30px;top:40px;width:1440px;height:1080px">${sunset()}<div class="a" style="left:0;top:${my}px;width:1440px;height:1080px">${msg}</div>`
+    + A(0, 640, 1440, 135, 'background:rgba(246,248,244,.82)') + plus(93, 705, 58) + A(165, 668, 725, 82, 'border-radius:41px;background:#fff') + A(188, 683, 4, 52, 'background:#21b35a') + stickerIc(830, 712, 54)
+    + A(35, 775, 1130, 400, 'border-radius:44px 44px 0 0;background:rgba(214,216,222,.92)')
+    + (k < 2 ? T(150, 862, 42, '"PLSPL"', 'color:#333') + T(545, 862, 42, 'THE', 'color:#333') + T(950, 862, 42, 'I\'M', 'color:#333')
+             : T(198, 862, 42, 'I', 'color:#333') + T(548, 862, 42, 'THE', 'color:#333') + T(945, 862, 42, 'I\'M', 'color:#333'))
+    + A(400, 815, 2, 60, 'background:rgba(0,0,0,.12)') + A(785, 815, 2, 60, 'background:rgba(0,0,0,.12)')
+    + 'QWERTYUIOP'.split('').map((c, i) => A(43 + i * 112.7, 925, 92, 122, 'border-radius:14px;background:rgba(255,255,255,.93);box-shadow:0 2px 0 rgba(0,0,0,.18)') + T(43 + i * 112.7 + 46 - 17, 1005, 52, c, 'color:#111;width:34px;text-align:center')).join('')
+    // iridescent light leak across the glass
+    + `<div class="a" style="left:-200px;top:-100px;width:1800px;height:1400px;mix-blend-mode:screen;opacity:.85;transform:translateX(${k * 6}px) rotate(14deg);background:linear-gradient(90deg,rgba(255,60,0,0) 0%,rgba(255,80,30,.45) 8%,rgba(255,170,40,.45) 16%,rgba(240,240,90,.4) 24%,rgba(110,255,150,.45) 33%,rgba(70,230,230,.4) 42%,rgba(140,170,255,.32) 50%,rgba(255,140,230,.28) 58%,rgba(255,200,120,.12) 66%,rgba(0,0,0,0) 74%)"></div>`
+    + `<div class="a" style="left:0;top:820px;width:1440px;height:300px;mix-blend-mode:screen;background:radial-gradient(ellipse 600px 160px at 260px 220px,rgba(120,255,230,.55),transparent),radial-gradient(ellipse 500px 140px at 900px 260px,rgba(255,150,240,.45),transparent)"></div>`
+    + '</div>');
+  h += A(1170, -40, 60, 1200, 'background:#0b0b0b') + A(1228, -40, 34, 1200, 'background:linear-gradient(90deg,#3a3125,#bfae8a 40%,#6b5d45)');
+  h += '</div>';
+  // background beyond the phone + thumb (soft, out of focus)
+  h += A(1262 + dx, -40, 300, 1200, 'background:linear-gradient(180deg,#4a3a30,#7a5a48 60%,#5b4337)');
+  h += `<div class="a" style="left:0;top:0;width:1440px;height:1080px;filter:blur(16px)">
+     <div class="a" style="left:${930 + dx}px;top:${560 + dy}px;width:700px;height:330px;border-radius:200px 120px 120px 220px;transform:rotate(-24deg);background:linear-gradient(170deg,#9a7058 0%,#6b4a3a 45%,#2a1d17 100%)"></div>
+     <div class="a" style="left:${1120 + dx}px;top:${120 + dy}px;width:420px;height:700px;border-radius:200px;background:linear-gradient(90deg,#b88c70,#d9b39a 50%,#a07a60)"></div></div>`;
+  return h;
+}
+// ---------------- shot 30b ----------------
+const TB_SCREEN = [[1, 10], [3, 11], [4, 11], [3, 8], [1, 4], [0, 1], [-1, -2], [0, -3], [2, -1], [5, 2], [7, 6], [7, 9], [5, 9], [3, 7], [0, 5], [-1, 2], [-2, 1], [-1, 0], [0, 0], [4, 4], [5, 6], [6, 6], [7, 6], [9, 5], [9, 3]]; // composer track k12..36
+const TB_MSG = [213, 213, 212, 212, 213, 170, 124, 105, 91, 86, 84, 79, 67, 51, 23, 9, 1, 0, 0, 0, 0, 0, 0, 0, 0];
+const ROW1 = ['🥀', '🥀', '🤑', '😭', '😂', '😍', '👀', '💁‍♀️', '💁‍♀️', '💁‍♀️', '🧑‍⚕️', '🙏'];
+const ROW2 = ['😏', '👍', '👽', '💋', '😈', '🤑', '👍', '💔', '👽', '🤑', '💋', '😏'];
+let AV = '';
+function shot30b(k) {
+  const i = k - 12, [dx, dy] = TB_SCREEN[i], my = TB_MSG[i];
+  const vy = i ? Math.abs(TB_MSG[i] - TB_MSG[i - 1]) + Math.abs(TB_SCREEN[i][1] - TB_SCREEN[i - 1][1]) : 0;
+  let msg = sticker(1090, -120, 380) + fwd(774, -67, 40);
+  msg += `<div class="pill" style="left:1020px;top:115px;width:250px;height:77px;font-size:34px">1:20 PM <svg width="34" height="26" viewBox="0 0 22 16" style="overflow:visible"><path d="M1.5 9l3.5 3.5L12 4.5M8 12.5L15.5 4.5" fill="none" stroke="#53bdeb" stroke-width="2" stroke-linecap="round"/></svg></div>`;
+  msg += A(205, 250, 890, 355, 'border-radius:40px 40px 40px 10px;background:#fff') + svg(178, 570, 44, 36, '0 0 44 36', '<path d="M44 0v34H6C20 30 26 18 28 0z" fill="#fff"/>');
+  msg += T(245, 312, 36, 'baby sam', 'color:#9b7a5c;font-weight:500');
+  msg += T(245, 383, 43, 'I HAVE TUITION THIS WEEEK 💩 💩', 'color:#1f1f1f;letter-spacing:1px');
+  msg += ROW1.map((e, j) => `<div class="emo" style="left:${243 + j * 67.5}px;top:${402}px;font-size:56px">${e}</div>`).join('');
+  msg += ROW2.map((e, j) => `<div class="emo" style="left:${243 + j * 67.5}px;top:${462}px;font-size:56px">${e}</div>`).join('');
+  msg += `<div class="emo" style="left:243px;top:522px;font-size:56px">🙏</div>` + TR(1057, 585, 32, '1:22 PM', 'color:#8b8b8b;letter-spacing:.5px');
+  msg += A(85, 513, 90, 90, 'border-radius:50%;background:#ecdcb9') + T(116, 573, 40, 'B', 'color:#6b5d45');
+  if (k >= 23) {
+    msg += A(200, 648, 750, 177, 'border-radius:40px 40px 40px 10px;background:#fff') + svg(174, 790, 44, 36, '0 0 44 36', '<path d="M44 0v34H6C20 30 26 18 28 0z" fill="#fff"/>');
+    msg += T(240, 708, 36, 'Mia T.', 'color:#2f9e5d;font-weight:500') + T(240, 778, 43, 'Can’t make it this week', 'color:#1f1f1f;letter-spacing:.8px') + TR(912, 803, 32, '1:22 PM', 'color:#8b8b8b;letter-spacing:.5px');
+    msg += A(80, 730, 90, 90, `border-radius:50%;background:url(${AV}) center/cover`);
+  } else if (k >= 17) {
+    msg += A(190, 655, 170, 90, 'border-radius:45px 45px 45px 12px;background:#fff') + [235, 275, 315].map((x, j) => A(x - 9, 691, 18, 18, `border-radius:50%;background:#9aa0a6;opacity:${.45 + .5 * ((k + j) % 3 === 0)}`)).join('');
+    msg += A(80, 655, 90, 90, `border-radius:50%;background:url(${AV}) center/cover`);
+  }
+  let h = `<div class="a" style="left:0;top:0;width:1440px;height:1080px;transform:translate(${dx}px,${dy}px);filter:blur(${Math.min(5, vy * .06)}px)">`;
+  h += A(60, -40, 1260, 1200, 'overflow:hidden;background:#000', `<div class="a" style="left:-60px;top:40px;width:1440px;height:1080px">${sunset()}<div class="a" style="left:0;top:${my}px;width:1440px;height:1080px">${msg}</div>`
+    + svg(0, 0, 1440, 1080, '0 0 1440 1080', '<path d="M760 -10 L905 120 L1000 255 L1110 330 L1250 430 L1450 640" fill="none" stroke="rgba(40,25,15,.55)" stroke-width="2.2"/><path d="M762 -8 L907 122 L1002 257 L1112 332 L1252 432 L1452 642" fill="none" stroke="rgba(255,240,220,.35)" stroke-width="1"/><path d="M1000 255 L1012 310 L1004 360" fill="none" stroke="rgba(40,25,15,.4)" stroke-width="1.6"/><path d="M1110 330 L1180 300" fill="none" stroke="rgba(40,25,15,.35)" stroke-width="1.4"/>')
+    + A(0, 845, 1440, 160, 'background:rgba(248,246,240,.86)') + plus(128, 922, 62) + A(205, 885, 810, 90, 'border-radius:45px;background:#fff;border:1px solid #e6e6e6') + A(234, 893, 4, 70, 'background:#21b35a')
+    + stickerIc(950, 930, 60) + camIc(1117, 930, 74) + micIc(1243, 930, 62)
+    + A(60, 1000, 1260, 200, 'border-radius:40px 40px 0 0;background:rgba(214,216,222,.95)') + T(255, 1102, 42, 'i', 'color:#444') + T(640, 1102, 42, 'the', 'color:#444') + T(1070, 1102, 42, 'i’m', 'color:#444')
+    + '</div>');
+  h += A(0, -40, 60, 1200, 'background:linear-gradient(90deg,#1a0d0a,#050505)') + A(1320, -40, 26, 1200, 'background:#070707') + A(1344, -40, 76, 1200, 'background:linear-gradient(90deg,#4a3f2e,#cbbd9c 35%,#e6dcc2 50%,#8b7b5c 80%,#3a3022)');
+  h += A(1418, -40, 100, 1200, 'background:#6e1414');
+  h += '</div>';
+  return h;
+}
+// ---------------- shot 32 ----------------
+const TC = [[-9, 12], [-9, 12], [-1, 12], [7, 13], [10, 13], [10, 14], [10, 14], [10, 14], [7, 12], [2, 9], [0, 9], [-1, 9], [0, 6], [1, 1], [1, 0], [2, 0], [2, -1], [2, 0], [0, 1], [0, 1], [0, 0], [-1, -1], [-1, -2], [0, -1], [4, 1], [6, 2], [7, 2], [6, 0], [4, -1], [1, -3], [-1, -3], [-2, -3], [-1, -5], [0, -8], [1, -9], [-1, -9], [-2, -6], [-4, -3], [-5, -2], [-6, -3]];
+function skyline() {
+  const R = CM.rng(77); let b = ''; let x = -20;
+  const heights = [380, 330, 300, 340, 250, 300, 270, 330, 360, 300, 330, 380, 420, 460, 470, 480, 470, 470, 480, 470];
+  heights.forEach((y, i) => { const w = 50 + R() * 70; b += `<div class="a" style="left:${x}px;top:${y + (R() - .5) * 20}px;width:${w}px;height:900px;background:#0a0807"></div>`; x += w - 4; });
+  b += `<div class="a" style="left:150px;top:300px;width:90px;height:900px;background:#0a0807"></div><div class="a" style="left:330px;top:260px;width:110px;height:900px;background:#0a0807"></div><div class="a" style="left:560px;top:330px;width:120px;height:900px;background:#0a0807"></div>`;
+  b += svg(950, 90, 230, 140, '0 0 230 140', '<path d="M10 40 L220 20 M30 38 L60 140 M90 32 L120 140 M30 38 L90 32 M60 60 L210 25 M150 26 L160 120" stroke="#1a120d" stroke-width="5" fill="none"/>');
+  return b;
+}
+function shot32(k) {
+  const [dx, dy] = TC[k];
+  let s = A(-200, -200, 1900, 1500, 'background:linear-gradient(180deg,#a95a22 0%,#c8742c 25%,#e39540 42%,#f0b25a 55%,#d88a3a 70%,#3a2416 80%,#0a0807 88%)') + skyline();
+  s += `<div class="pill" style="left:-60px;top:12px;width:240px;height:72px;font-size:31px">1:22 PM</div>`;
+  s += A(435, 150, 675, 130, 'border-radius:40px;background:#d9fdd3') + T(480, 231, 41, 'NEXT WEEK????', 'color:#1d2a1f;letter-spacing:1.2px') + TR(1030, 250, 28, '1:23 PM', 'color:#6f7d6c') + ticks(1040, 246, 26);
+  s += A(456, 290, 654, 120, 'border-radius:40px;background:#d9fdd3') + T(500, 366, 41, 'HELOOOOOOO', 'color:#1d2a1f;letter-spacing:1.6px') + TR(1030, 387, 28, '1:23 PM', 'color:#6f7d6c') + ticks(1040, 383, 26);
+  s += sticker(890, 640, 330) + fwd(591, 690, 55);
+  s += `<div class="pill" style="left:840px;top:878px;width:255px;height:80px;font-size:31px">1:23 PM <svg width="32" height="24" viewBox="0 0 22 16" style="overflow:visible"><path d="M1.5 9l3.5 3.5L12 4.5M8 12.5L15.5 4.5" fill="none" stroke="#53bdeb" stroke-width="2" stroke-linecap="round"/></svg></div>`;
+  s += A(0, 1035, 830, 100, 'border-radius:40px;background:rgba(220,224,228,.9)');
+  let h = `<div class="a" style="left:0;top:0;width:1440px;height:1080px;transform:translate(${dx}px,${dy}px)">`;
+  h += A(-40, -40, 1205, 1200, 'overflow:hidden', `<div class="a" style="left:40px;top:40px;width:1440px;height:1080px">${s}</div>`);
+  h += A(1165, -40, 40, 1200, 'background:#080808') + A(1203, -40, 50, 1200, 'background:linear-gradient(90deg,#3d3427,#c9b995 45%,#7a6a4e)') + '</div>';
+  h += `<div class="a" style="left:0;top:0;width:1440px;height:1080px;filter:blur(20px)">
+    <div class="a" style="left:${1252 + dx}px;top:-60px;width:260px;height:1250px;background:linear-gradient(180deg,#6a2a20,#8a3a2c 30%,#4a1c16)"></div>
+    <div class="a" style="left:${1270 + dx}px;top:${70 + dy}px;width:240px;height:300px;border-radius:120px;background:#e8c4b0"></div>
+    <div class="a" style="left:${1285 + dx}px;top:${420 + dy}px;width:230px;height:260px;border-radius:120px;background:#dcb39e"></div>
+    <div class="a" style="left:${1300 + dx}px;top:${760 + dy}px;width:220px;height:260px;border-radius:120px;background:#c99a84"></div></div>`;
+  return h;
+}
+window.ready = (async () => {
+  AV = 'file:///Users/faseeh/Developer/Chatly/reels/chatly-chatapps/mg/assets/av/f2-eastasian-mid30s.jpg';
+  const im = new Image(); im.src = AV; try { await im.decode(); } catch (e) { }
+  document.getElementById('stage').style.opacity = CM.guideOpacity();
+})();
+window.render = async t => {
+  await CM.guideAt(t);
+  const k = Math.round(t * 24);
+  scn.innerHTML = part === 'B' ? shot32(Math.min(39, k)) : (k <= 11 ? shot30a(k) : shot30b(Math.min(36, k)));
+};
+</script></body></html>

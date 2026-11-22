@@ -1,0 +1,33 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>
+@font-face { font-family: 'GS'; src: url('../_linkup/fonts/gsflex.ttf') format('truetype'); font-weight: 100 1000; }
+html, body { margin:0; background:transparent; }
+#stage { position:relative; width:1440px; height:1080px; overflow:hidden; background:transparent; font-family:'GS',sans-serif; color:#fff; }
+.w { position:absolute; font-weight:600; font-size:92px; line-height:1; letter-spacing:-.01em; text-shadow:0 2px 10px rgba(0,0,0,.35); font-variation-settings:'wdth' 100, 'opsz' 72; }
+#logo { position:absolute; filter:drop-shadow(0 2px 8px rgba(0,0,0,.35)); }
+#logo svg { display:block; }
+</style></head><body>
+<div id="stage">
+  <div class="w" id="a" style="font-size:84px">a</div>
+  <div id="logo"></div>
+  <div class="w" id="story" style="font-size:70px">story</div>
+</div>
+<script type="module">
+// HF-31 end card: "a [Chatly lockup] story" over the still-playing Meet view (ref 74.90-76.17, t=0 at 74.90). Alpha overlay (ProRes 4444).
+// Lockup = kit LogoWithText (never retyped). "story" lands at 75.30. The official 4:3 outro (out/HF-31-outro-4x3.mp4) follows the cut at 76.17.
+import { icon } from '../../../../reference/chatly-ui-kit/icons.js';
+const $ = s => document.getElementById(s);
+const BASE = 589;                 // shared baseline (ref "a"/"Lovable"/"story" baseline, 1440 px)
+const LW = 412, LH = LW * 100 / 405; // LogoWithText 405x100 (wordmark cap ~ ref "Lovable" cap, 90 px)
+$('logo').innerHTML = icon('LogoWithText', { size: [LW, LH], color: '#FFFFFF' });
+window.ready = (async () => { await document.fonts.load('600 92px GS'); await document.fonts.ready;
+  // "a" + lockup + "story", same gaps as the reference, group centred where the reference group sits (x ~785)
+  const a = $('a'), s = $('story'), lg = $('logo'), asc = f => f * 0.80;
+  const aw = a.getBoundingClientRect().width, sw = s.getBoundingClientRect().width, g1 = 30, g2 = 28;
+  const x0 = 785 - (aw + g1 + LW + g2 + sw) / 2;
+  a.style.left = x0 + 'px'; a.style.top = (BASE - asc(84) - 22) + 'px';
+  lg.style.left = (x0 + aw + g1) + 'px'; lg.style.top = (BASE - LH * 0.84) + 'px';
+  s.style.left = (x0 + aw + g1 + LW + g2) + 'px'; s.style.top = (BASE - asc(70) - 19) + 'px';
+})();
+window.render = t => { const abs = 74.90 + t; $('story').style.visibility = abs >= 75.30 - 1e-6 ? 'visible' : 'hidden'; };
+</script></body></html>

@@ -1,0 +1,37 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="../HF-07-meet/common.js"></script>
+<style>canvas{position:absolute;left:0;top:0}</style>
+</head><body><div id="stage"><canvas id="c" width="1440" height="1080"></canvas></div>
+<script>
+// HF-14 · Black photo-window trick. Alpha matte: opaque black with ONE transparent window per frame (the photo/plate goes under).
+// PARAMS.part = 'A' (default): shots 26-27, ref 32.000-33.958 (f768-f815), 47 frames.
+// PARAMS.part = 'B'          : shot 52,    ref 70.333-71.542 (f1688-f1717), 29 frames (stepped growth, then full frame).
+// Window rects measured from the reference at 24 fps (x0,y0,x1,y1 in 1440x1080). See layout.json for what goes in each.
+CM.initGuide();
+const part = CM.P.part || 'A';
+const A = [ // [fromFrame, rect, content]
+  [0, [511, 382, 929, 696], 'L5 kitchen plate (same clip as shot 25), cover-fit'],
+  [27, [438, 347, 1001, 732], 'friend still 1: old group photo (indoor, sitting on floor)'],
+  [31, [316, 255, 1123, 824], 'friend still 2: school group photo outdoors (subtitle "Everytime" from HF-02)'],
+  [35, [246, 222, 1195, 856], 'friend still 3: two girls indoors'],
+  [39, [172, 176, 1269, 903], 'friend still 4: light-leak photo (orange flare on the left)'],
+  [43, [179, 159, 1260, 921], 'friend still 5: night photo, three girls with pink bags'],
+];
+const B = [
+  [0, [626, 475, 813, 604], 'friend still 6 (group, ok-hands) — same still in every step, cover-fit'],
+  [4, [301, 228, 820, 584], 'same still'],
+  [8, [294, 60, 1090, 602], 'same still'],
+  [12, [248, 58, 1440, 935], 'same still'],
+  [16, [0, 0, 1440, 1080], 'full frame: the still (continues into shot 53)'],
+];
+window.LAYOUT = { A, B };
+const g = document.getElementById('c').getContext('2d');
+window.ready = (async () => { document.getElementById('stage').style.opacity = CM.guideOpacity(); })();
+window.render = async t => {
+  await CM.guideAt(t);
+  const k = Math.round(t * 24), L = part === 'A' ? A : B;
+  let r = L[0][1]; for (const [f, rect] of L) if (k >= f) r = rect;
+  g.clearRect(0, 0, 1440, 1080); g.fillStyle = '#000'; g.fillRect(0, 0, 1440, 1080);
+  g.clearRect(r[0], r[1], r[2] - r[0], r[3] - r[1]);
+};
+</script></body></html>

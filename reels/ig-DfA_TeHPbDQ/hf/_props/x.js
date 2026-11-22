@@ -29,7 +29,7 @@
     const a = L1.getContext('2d'), b = L2.getContext('2d'); a.setTransform(1, 0, 0, 1, 0, 0); a.clearRect(0, 0, W, H);
     for (let i = 0; i < n; i++) { const u = n > 1 ? i / (n - 1) - .5 : 0; b.setTransform(1, 0, 0, 1, 0, 0); b.clearRect(0, 0, W, H); fn(b, vec[0] * u, vec[1] * u);
       a.globalCompositeOperation = 'lighter'; a.globalAlpha = 1 / n; a.drawImage(L2, 0, 0); }
-    a.globalCompositeOperation = 'source-over'; a.globalAlpha = 1; g.drawImage(L1, 0, 0);
+    a.globalCompositeOperation = 'source-over'; a.globalAlpha = 1; g.save(); g.setTransform(1, 0, 0, 1, 0, 0); g.drawImage(L1, 0, 0); g.restore();
   }
   // white scanned paper with sparse grey specks (stable), faint fibres
   function scanPaper(g, seed = 11, base = [251, 251, 249], specks = 70) {
@@ -41,5 +41,12 @@
   const lerp = (a, b, t) => a + (b - a) * t, cl = (v, a = 0, b = 1) => Math.max(a, Math.min(b, v));
   // keyframe track: [[frame, value(s)], ...] -> linear interp at frame f
   function track(keys, f) { if (f <= keys[0][0]) return keys[0][1]; for (let i = 1; i < keys.length; i++) if (f <= keys[i][0]) { const [fa, va] = keys[i - 1], [fb, vb] = keys[i]; const u = (f - fa) / (fb - fa); return Array.isArray(va) ? va.map((v, j) => lerp(v, vb[j], u)) : lerp(va, vb, u); } return keys[keys.length - 1][1]; }
-  window.X = { W, H, trim, load, box, draw, mblur, scanPaper, lerp, cl, track };
+  // unrotated w,h of a rectangle rotated by rot (deg) whose axis-aligned bbox is x0..x1, y0..y1
+  function fromBBox(x0, y0, x1, y1, rot, aspect) {
+    const W = x1 - x0, H = y1 - y0, a = Math.abs(rot) * Math.PI / 180, c = Math.cos(a), s = Math.sin(a), det = c * c - s * s;
+    let w, h; if (Math.abs(det) > .25) { w = (W * c - H * s) / det; h = (H * c - W * s) / det; }
+    if (!(w > 10 && h > 10)) { h = (W + H) / ((aspect || 1.5) * (c + s) + (c + s)); w = h * (aspect || 1.5); }
+    return { cx: (x0 + x1) / 2, cy: (y0 + y1) / 2, w, h };
+  }
+  window.X = { fromBBox, W, H, trim, load, box, draw, mblur, scanPaper, lerp, cl, track };
 })();
