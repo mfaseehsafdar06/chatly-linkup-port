@@ -1,0 +1,12 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script src="../_props/clip.js"></script><script>
+// P-27 calculator stickers, ALPHA overlay, 36 frames (1.5 s): '30 x 3 x 7' strip pops at POP1, '= 630' pops at POP2.
+// Positions sit over a phone/calculator held at the lens (placeholder plate: ref shot 24). Edit in config.
+// ======== CONFIG ========
+const C='../../assets/cut/';
+const POP1=0, POP2=16;
+CLIP({items:[
+ {src:C+'F-01_06.png',cx:640,cy:420,w:560,rot:-4,on:POP1,anim:'pop',inset:[.003,.003,.003,.012]},
+ {src:C+'F-01_07.png',cx:820,cy:640,w:470,rot:3,on:POP2,anim:'pop',inset:[.003,.003,.003,.012]}]});
+</script></body></html>

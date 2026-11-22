@@ -1,0 +1,9 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script src="../_props/clip.js"></script><script>
+// P-21 FASEEH name chip, ALPHA overlay, 19 frames (0.79 s). Same behaviour as HF-05 / ref shot 4 LEO chip:
+// hard pop on frame 0, stop-motion boil between 3 poses every 4 frames. Placement is a config value (edit to his face).
+// ======== CONFIG ========
+const C='../../assets/cut/';
+CLIP({items:[{src:C+'F-01_00.png',cx:975,cy:810,w:400,rot:-2.6,on:0,anim:'pop',inset:[.004,.004,.004,.02]}]});
+</script></body></html>

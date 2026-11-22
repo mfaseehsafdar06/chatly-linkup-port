@@ -1,0 +1,41 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="../HF-07-meet/common.js"></script>
+<style>canvas{position:absolute;left:0;top:0}</style>
+</head><body><div id="stage"><canvas id="c" width="1440" height="1080"></canvas></div>
+<script>
+// P-14 · "he's not the only one" black photo-window trick ('This is Faseeh' §4), re-cut of HF-14 part A (LinkUp shots 26–27).
+// 60 frames (2.5 s). PARAMS.mode = 'matte' (default): opaque black + ONE transparent window per frame (alpha .mov, drop real plates under).
+//                    PARAMS.mode = 'preview'       : same, with the placeholders filled in (grey "PLATE: Faseeh" card + 4 avatar stills), .mp4.
+// First window = the measured LinkUp kitchen window; the 4 swaps keep the ref's 4-frame rhythm but stay small and jump around (brief: 'small photo windows').
+// No captions ("he's not the only one" words come from the caption track and sit above this matte).
+CM.initGuide();
+const mode = CM.P.mode || 'matte';
+const AVD = 'file:///Users/faseeh/Developer/Chatly/reels/chatly-chatapps/mg/assets/av/';
+const WINS = [ // [fromFrame, [x0,y0,x1,y1], content, placeholder]
+  [0, [511, 382, 929, 696], 'PLATE: Faseeh at his desk (live action, cringing / laughing), cover-fit', 'plate'],
+  [44, [560, 300, 1020, 645], 'other marketer 1: teammate at a laptop (still or 4-frame clip)', 'm2-black-mid30s.jpg'],
+  [48, [380, 420, 880, 795], 'other marketer 2: friend on phone, posting', 'f1-black-late20s.jpg'],
+  [52, [610, 250, 1150, 655], 'other marketer 3: coffee-shop laptop', 'm4-eastasian-early30s.jpg'],
+  [56, [420, 340, 1010, 782], 'other marketer 4: teammate at a desk, head in hands', 'f4-white-40s.jpg'],
+];
+window.LAYOUT = WINS;
+const g = document.getElementById('c').getContext('2d'); const IM = {};
+function cover(img, r) { const [x0, y0, x1, y1] = r, w = x1 - x0, h = y1 - y0, s = Math.max(w / img.width, h / img.height); const sw = w / s, sh = h / s; g.drawImage(img, (img.width - sw) / 2, (img.height - sh) * .22, sw, sh, x0, y0, w, h); }
+window.ready = (async () => {
+  await CM.fonts();
+  if (mode === 'preview') for (const w of WINS) if (w[3] !== 'plate') IM[w[3]] = await new Promise(res => { const i = new Image(); i.onload = () => res(i); i.src = AVD + w[3]; });
+})();
+window.render = async t => {
+  const k = Math.round(t * 24); let W = WINS[0]; for (const w of WINS) if (k >= w[0]) W = w;
+  const r = W[1];
+  g.clearRect(0, 0, 1440, 1080); g.fillStyle = '#000'; g.fillRect(0, 0, 1440, 1080);
+  if (mode === 'preview') {
+    if (W[3] === 'plate') {
+      g.fillStyle = '#7d7f82'; g.fillRect(r[0], r[1], r[2] - r[0], r[3] - r[1]);
+      g.strokeStyle = 'rgba(255,255,255,.35)'; g.lineWidth = 2; g.strokeRect(r[0] + 10, r[1] + 10, r[2] - r[0] - 20, r[3] - r[1] - 20);
+      g.fillStyle = '#fff'; g.font = '600 30px GS, Arial'; g.textAlign = 'center'; g.textBaseline = 'middle';
+      g.fillText('PLATE: Faseeh', (r[0] + r[2]) / 2, (r[1] + r[3]) / 2 - 12); g.font = '400 20px GS, Arial'; g.fillStyle = 'rgba(255,255,255,.75)'; g.fillText('live action (to film)', (r[0] + r[2]) / 2, (r[1] + r[3]) / 2 + 24);
+    } else cover(IM[W[3]], r);
+  } else g.clearRect(r[0], r[1], r[2] - r[0], r[3] - r[1]);
+};
+</script></body></html>

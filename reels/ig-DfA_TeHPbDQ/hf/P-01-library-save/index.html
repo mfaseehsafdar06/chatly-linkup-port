@@ -1,0 +1,49 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../reference/chatly-ui-kit/chatly-ui.css">
+<link rel="stylesheet" href="../_chatly/pl.css">
+</head><body><div id="stage"></div>
+<script type="module">
+// P-01: Prompt library -> New prompt modal. The last variable is typed; "{{audience}}" turns into a chip the moment its closing braces land
+// (prompt-variable-node convertVariables), the camera pushes in on it, then Save prompt and the card lands in the grid.
+// PARAMS.still = 1 -> full-res 1920x1200 still of the modal with the finished prompt.
+import { CU, shell, libraryPage, editorModal, cursor, stage, keys, clamp, TEMPLATE, MINE, OTHER_PROMPTS } from '../_chatly/pl.js';
+const P = window.PARAMS || {};
+const BASE = TEMPLATE.slice(0, TEMPLATE.indexOf('{{audience}}')); // "...in the voice of {{account}}, for "
+const TAIL = '{{audience}}.';
+const typed = t => BASE + TAIL.slice(0, clamp(Math.floor((t - 0.08) / 0.075) + 1, 0, TAIL.length)); // ~13 chars/s
+const T_SAVE = 2.78, T_CLOSE = 2.9;
+const page = (withNew, hover = -1) => libraryPage({ prompts: withNew ? [MINE, ...OTHER_PROMPTS] : OTHER_PROMPTS, hover });
+const html = (t, extra = '') => {
+  if (t >= T_CLOSE) { const u = clamp((t - T_CLOSE) / 0.15); return shell({ main: page(true), overlay: (u < 1 ? `<div style="position:absolute;inset:0;opacity:${1 - u}">${editorModal({ text: TEMPLATE })}</div>` : '') + extra }); }
+  const text = typed(t), done = text === TEMPLATE;
+  return shell({ main: page(false), overlay: editorModal({ text, caret: !done || t < 1.2, edFocus: t < 2.3, saveHover: t > 2.62 && t < T_CLOSE, saveDown: t >= T_SAVE && t < T_SAVE + 0.1 }) + extra });
+};
+let S, G;
+const box = (sel, i = 0) => { const r = S.sharp.querySelectorAll(sel)[i].getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, w: r.width, h: r.height, l: r.left, t: r.top }; };
+window.ready = (async () => {
+  if (P.still) { const st = document.getElementById('stage'); st.style.width = '1920px'; st.style.height = '1200px'; st.innerHTML = `<div style="width:1920px;height:1200px">${shell({ main: page(false), h: 1200, overlay: editorModal({ text: TEMPLATE }) })}</div>`; await document.fonts.ready; return; }
+  S = stage(); await document.fonts.load('14px GS'); await document.fonts.ready;
+  S.sharp.innerHTML = html(1.5); S.sharp.style.transform = 'none';
+  G = { ed: box('#modal .ed'), chip: box('#modal .ed .chip', 3), modal: box('#modal'), save: box('#modal .mf .pri') };
+  S.sharp.innerHTML = html(3.3); G.card = box('.pcard', 0); G.grid = box('.grid');
+})();
+window.render = t => {
+  if (P.still) return;
+  // camera keys: [t, [s, ax, ay, sx, sy, ry, rz]]
+  const K = [
+    [0, [2.05, G.ed.l + G.ed.w * 0.62, G.ed.t + 38, 760, 520, 7, -0.6]],
+    [0.95, [2.18, G.chip.x - 30, G.chip.y, 735, 528, 6.5, -0.5]],
+    [1.25, [3.25, G.chip.x, G.chip.y, 720, 540, 4, -0.3]],
+    [2.05, [3.42, G.chip.x, G.chip.y, 716, 542, 4, -0.2]],
+    [2.45, [1.42, G.modal.x + 60, G.modal.y + 40, 760, 560, 6, -0.6]],
+    [2.95, [1.36, G.modal.x + 40, G.modal.y + 20, 740, 560, 6, -0.5]],
+    [3.25, [1.62, G.card.x - 40, G.card.y + 30, 700, 470, 6, -0.5]],
+    [3.5, [1.66, G.card.x - 40, G.card.y + 30, 696, 468, 6, -0.5]],
+  ];
+  const [s, ax, ay, sx, sy, ry, rz] = keys(K, t);
+  // cursor heads to "Save prompt", clicks at T_SAVE, then rests
+  let cur = '';
+  if (t > 2.3) { const p = keys([[2.3, [G.save.x + 160, G.save.y + 150]], [2.7, [G.save.x + 6, G.save.y + 4]], [3.5, [G.save.x - 10, G.save.y + 12]]], t); cur = cursor(p[0], p[1], t > 2.6 && t < T_CLOSE + 0.1 ? 'hand' : 'arrow'); }
+  S.frame(html(t, cur), { s, ax, ay, sx, sy, ry, rz, blur: 3.5 });
+};
+</script></body></html>

@@ -1,0 +1,93 @@
+{
+ "asset": "P-14",
+ "script": "This is Faseeh §4 \"he's not the only one\"",
+ "frames": 60,
+ "fps": 24,
+ "outputs": {
+  "out/P-14-not-the-only-one_matte.mov": "ProRes 4444 alpha: opaque black, one transparent window per frame - put the plate/still under it, cover-fit to the rect",
+  "out/P-14-not-the-only-one_preview.mp4": "same timing with placeholders filled (grey PLATE card + 4 stock avatars) for the rough cut"
+ },
+ "windows": [
+  {
+   "fromFrame": 0,
+   "toFrame": 43,
+   "t": [
+    0,
+    1.833
+   ],
+   "rect": {
+    "x": 511,
+    "y": 382,
+    "w": 418,
+    "h": 314
+   },
+   "content": "PLATE: Faseeh at his desk (live action, cringing / laughing), cover-fit",
+   "placeholder": "plate"
+  },
+  {
+   "fromFrame": 44,
+   "toFrame": 47,
+   "t": [
+    1.833,
+    2
+   ],
+   "rect": {
+    "x": 560,
+    "y": 300,
+    "w": 460,
+    "h": 345
+   },
+   "content": "other marketer 1: teammate at a laptop (still or 4-frame clip)",
+   "placeholder": "m2-black-mid30s.jpg"
+  },
+  {
+   "fromFrame": 48,
+   "toFrame": 51,
+   "t": [
+    2,
+    2.167
+   ],
+   "rect": {
+    "x": 380,
+    "y": 420,
+    "w": 500,
+    "h": 375
+   },
+   "content": "other marketer 2: friend on phone, posting",
+   "placeholder": "f1-black-late20s.jpg"
+  },
+  {
+   "fromFrame": 52,
+   "toFrame": 55,
+   "t": [
+    2.167,
+    2.333
+   ],
+   "rect": {
+    "x": 610,
+    "y": 250,
+    "w": 540,
+    "h": 405
+   },
+   "content": "other marketer 3: coffee-shop laptop",
+   "placeholder": "m4-eastasian-early30s.jpg"
+  },
+  {
+   "fromFrame": 56,
+   "toFrame": 59,
+   "t": [
+    2.333,
+    2.5
+   ],
+   "rect": {
+    "x": 420,
+    "y": 340,
+    "w": 590,
+    "h": 442
+   },
+   "content": "other marketer 4: teammate at a desk, head in hands",
+   "placeholder": "f4-white-40s.jpg"
+  }
+ ],
+ "notes": "Captions sit above the matte (in the LinkUp ref, words overlap the window edges). Hard cuts between windows, no border."
+}

@@ -1,3 +1,5 @@
+hf/P-22-reportcard-fail/out/P-22-reportcard-fail.mov
 hf/HF-27-reportcard-b/out/HF-27-reportcard-b.mov
 hf/HF-06-reportcard-a/out/HF-06-reportcard-a.mov
 hf/HF-01-captions/out/HF-01-captions.mov
+hf/P-23-reportcard-pass/out/P-23-reportcard-pass.mov

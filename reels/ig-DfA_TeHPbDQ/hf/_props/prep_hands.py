@@ -25,3 +25,14 @@ json.dump(out,open('hands/hands.json','w'),indent=1)
 im=cv2.imread('hands/H2.png',cv2.IMREAD_UNCHANGED); im[:150,:260,3]=0
 r=im[...,:3].astype(int); sl=(im[...,3]>0)&(r.min(2)>170)&(np.arange(im.shape[1])[None,:]<300); im[sl,3]=0
 cv2.imwrite('hands/H2.png',im); print('H2 cleaned')
+# H0L: slap palm with a long forearm (bottom rows stretched downward) so the arm can run off-frame at small hand sizes.
+im=cv2.imread('hands/H0.png',cv2.IMREAD_UNCHANGED); h,w=im.shape[:2]
+a=im[...,3]; rows=[y for y in range(h) if (a[y]>128).sum()>20]; yb=rows[-1]
+band=im[yb-60:yb-20]                                   # forearm band just above the cut
+ext=cv2.resize(band,(w,1400),interpolation=cv2.INTER_LINEAR)
+xs=np.where(band[...,3].max(0)>128)[0]; cx=(xs.min()+xs.max())/2
+for y in range(ext.shape[0]):                          # forearm widens toward the elbow (x1.0 -> x1.45)
+    k=1+.45*min(1,y/900); M=np.float32([[k,0,cx*(1-k)]]); row=ext[y:y+1]
+    ext[y:y+1]=cv2.warpAffine(row,np.vstack([M,[[0,1,0]]]).astype(np.float32),(w,1),flags=cv2.INTER_LINEAR)
+ext=cv2.GaussianBlur(ext,(0,0),sigmaX=1.5,sigmaY=12)
+out=np.vstack([im[:yb-20],ext]); out=np.hstack([np.zeros((out.shape[0],250,4),np.uint8),out,np.zeros((out.shape[0],250,4),np.uint8)]); cv2.imwrite('hands/H0L.png',out); print('H0L',out.shape)

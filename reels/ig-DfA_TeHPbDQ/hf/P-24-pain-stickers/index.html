@@ -1,0 +1,15 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script src="../_props/clip.js"></script><script>
+// P-24 pain stickers, three separate ALPHA clips chosen with PARAMS.clip:
+//  a  2AM clock sticker pop                         36 f (1.5 s)
+//  b  'where's the 9am post??' card slides in from the right (4 f + overshoot), then a phone-buzz shake   48 f (2.0 s)
+//  c  'in NEW YORK' sticker pop                     36 f (1.5 s)
+// ======== CONFIG ========
+const C='../../assets/cut/';
+const CLIPS={
+ a:{items:[{src:C+'F-01_01.png',cx:1060,cy:250,w:420,rot:3,on:0,anim:'pop',inset:[.003,.003,.003,.012]}]},
+ b:{items:[{src:C+'F-02_02.png',cx:900,cy:225,w:900,rot:-1.5,on:0,anim:'slide',slide:{from:[980,0],frames:4},buzz:{on:9,frames:8,amp:7},boilAmp:.5,inset:[.002,.004,.004,.02]}]},
+ c:{items:[{src:C+'F-01_02.png',cx:950,cy:820,w:520,rot:-3,on:0,anim:'pop',inset:[.003,.003,.003,.012]}]}};
+CLIP(CLIPS[(window.PARAMS&&window.PARAMS.clip)||'a']);
+</script></body></html>

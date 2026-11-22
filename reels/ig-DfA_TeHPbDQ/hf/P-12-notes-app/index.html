@@ -1,0 +1,123 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="../HF-07-meet/common.js"></script>
+<style>
+  #scn{position:absolute;left:0;top:0;width:1440px;height:1080px;overflow:hidden;background:#2a211c;font-family:-apple-system,'SF Pro Text','Helvetica Neue',sans-serif}
+  .a{position:absolute;box-sizing:border-box}
+  .t{position:absolute;white-space:nowrap;line-height:1}
+  #ph{position:absolute;left:0;top:0;width:393px;height:900px;transform-origin:0 0;background:#f2f2f7;overflow:hidden}
+  .yel{color:#d9a400}
+  .row{position:absolute;left:16px;width:361px;height:66px;background:#fff}
+  .rt{position:absolute;left:16px;top:12px;font-size:17px;font-weight:600;color:#111;white-space:nowrap}
+  .rs{position:absolute;left:16px;top:37px;font-size:15px;color:#8a8a8e;white-space:nowrap;width:330px;overflow:hidden;text-overflow:ellipsis}
+  .rs b{font-weight:400;color:#111;margin-right:6px}
+  .sep{position:absolute;left:32px;width:345px;height:.5px;background:#d6d6da}
+  .hd{position:absolute;left:20px;font-size:20px;font-weight:700;color:#111}
+  #note{position:absolute;left:0;top:0;width:393px;height:900px;background:#fff}
+  .ln{position:absolute;left:18px;width:360px;font-size:17px;line-height:25px;color:#1c1c1e;white-space:nowrap;overflow:hidden}
+</style>
+</head><body><div id="stage"><div id="scn"></div></div>
+<script>
+// P-12 · Phone close-up: iOS Notes, note "PROMPTS — DO NOT DELETE" ('This is Faseeh' §4). Full-frame mp4, 60 frames (2.5 s).
+// k0–11 Notes list (pinned note on top) · thumb taps it k12–16 (row highlight) · iOS push k17–21 · note open; thumb flick-scrolls k26–59
+// through a long messy list of near-identical prompts. Filmed-phone feel after LinkUp shot 30: slight angle, blurred thumb, phone edge, light leak.
+// Code-drawn thumb / room (no plate). No captions.
+CM.initGuide();
+const scn = document.getElementById('scn');
+const S = 2.62;                      // pt -> px
+const PROMPTS = [
+  'Write 3 hooks for a TikTok about gym…', 'Write 3 hooks for a TikTok about study…', 'Write 3 hooks for a TikTok about sneakers…',
+  'Write 3 hooks for a TikTok about meal prep…', 'Write 3 hooks for a Reel about gym…', 'write 3 hooks for a tiktok about AI tools',
+  'Write 3 hooks for a TikTok abt gym FUNNIER', 'Write 3 captions for a TikTok about gym…', 'Write 3 hooks for a TikTok about study…',
+  '↓↓ COPY THIS ONE ↓↓', 'Write 3 hooks for a TikTok abt sneaker drops', 'Write 3 hooks for a TikTok about leg day…',
+  'v2 Write 3 hooks for a TikTok about gym…', 'Write 3 hooks for a Short about study…', 'hashtags gym: #gymtok #legday #fyp',
+  'Write 3 hooks for a TikTok about meal prep…', 'Write 3 hooks for a TikTok about AI tools…', 'Write 3 hooks for a TikTok about sneakers…',
+  'Write 3 hooks for a TikTok about gym…', 'write 3 hooks for a tiktok abt study (casual)', 'Write 3 hooks for a TikTok about gym…',
+  'Write 3 captions for a Reel about sneakers…', 'Write 3 hooks for a TikTok about protein…', 'Write 3 hooks for a TikTok about study…',
+  'DONT DELETE ^^^', 'Write 3 hooks for a TikTok about gym…', 'Write 3 hooks for a TikTok about meal prep…', 'Write 3 hooks for a TikTok about sneakers…',
+  'Write 3 hooks for a TikTok about AI tools…', 'Write 3 hooks for a TikTok about gym…', 'Write 3 hooks for a TikTok about study…',
+  'Write 3 hooks for a Reel about meal prep…', 'Write 3 hooks for a TikTok about sneakers…', 'Write 3 captions for a TikTok about study…',
+  'Write 3 hooks for a TikTok about gym…', 'Write 3 hooks for a TikTok about AI tools…', 'write 3 hooks for a tiktok about gym again',
+  'Write 3 hooks for a TikTok about study…', 'Write 3 hooks for a TikTok about sneakers…', 'Write 3 hooks for a TikTok about meal prep…',
+  'Write 3 hooks for a TikTok about gym…', 'Write 3 hooks for a Short about AI tools…', 'Write 3 hooks for a TikTok about study…',
+];
+const yIc = (w, h, vb, d, sw = 2) => `<svg width="${w}" height="${h}" viewBox="${vb}" style="display:block;overflow:visible"><path d="${d}" fill="none" stroke="#d9a400" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/></svg>`;
+const status = () => `<div class="t" style="left:34px;top:18px;font-size:17px;font-weight:600;color:#111">1:47</div>
+  <div class="a" style="left:296px;top:20px;display:flex;gap:6px;align-items:center">
+   <svg width="18" height="12" viewBox="0 0 18 12"><rect x="0" y="8" width="3" height="4" rx="1" fill="#111"/><rect x="5" y="5.5" width="3" height="6.5" rx="1" fill="#111"/><rect x="10" y="3" width="3" height="9" rx="1" fill="#111"/><rect x="15" y="0" width="3" height="12" rx="1" fill="#111"/></svg>
+   <svg width="16" height="12" viewBox="0 0 16 12"><path d="M8 11.5l2.2-2.6a3.3 3.3 0 00-4.4 0zM3.6 6.7a6.5 6.5 0 018.8 0M1 4a10.4 10.4 0 0114 0" fill="none" stroke="#111" stroke-width="1.8" stroke-linecap="round"/></svg>
+   <svg width="27" height="13" viewBox="0 0 27 13"><rect x=".5" y=".5" width="23" height="12" rx="3.5" fill="none" stroke="#999" /><rect x="2" y="2" width="15" height="9" rx="2" fill="#111"/><path d="M25 4.5v4" stroke="#999" stroke-width="1.5" stroke-linecap="round"/></svg></div>`;
+function listView(hl) {
+  let h = status();
+  h += `<div class="a yel" style="left:10px;top:62px;display:flex;align-items:center;gap:4px;font-size:17px">${yIc(12, 20, '0 0 12 20', 'M10 2L2 10l8 8', 2.6)}Folders</div>`;
+  h += `<div class="a" style="left:350px;top:62px">${yIc(24, 24, '0 0 24 24', 'M12 2a10 10 0 100 20 10 10 0 000-20z', 1.6)}</div><div class="t yel" style="left:355px;top:62px;font-size:18px;font-weight:700;letter-spacing:1px">···</div>`;
+  h += `<div class="t" style="left:16px;top:96px;font-size:34px;font-weight:700;color:#111;letter-spacing:.3px">Notes</div>`;
+  h += `<div class="a" style="left:16px;top:142px;width:361px;height:36px;border-radius:10px;background:#e3e3e8"></div><div class="t" style="left:46px;top:151px;font-size:17px;color:#8a8a8e">Search</div>
+       <svg class="a" style="left:22px;top:151px" width="18" height="18" viewBox="0 0 24 24"><circle cx="10" cy="10" r="7" fill="none" stroke="#8a8a8e" stroke-width="2.4"/><path d="M15 15l6 6" stroke="#8a8a8e" stroke-width="2.4" stroke-linecap="round"/></svg>
+       <svg class="a" style="left:352px;top:151px" width="14" height="18" viewBox="0 0 14 20"><rect x="4" y="1" width="6" height="11" rx="3" fill="#8a8a8e"/><path d="M1.5 9a5.5 5.5 0 0011 0M7 15v4" stroke="#8a8a8e" stroke-width="1.6" fill="none"/></svg>`;
+  h += `<div class="hd" style="top:202px">Pinned</div>`;
+  const rows = [['📌 PROMPTS — DO NOT DELETE', '1:47 AM', 'Write 3 hooks for a TikTok about gym… Write 3…'], ['Grocery list', 'Yesterday', 'eggs, oats, protein, bananas']];
+  const rows2 = [['hashtags v3', 'Friday', '#gymtok #legday #fyp #studytok'], ['PROMPTS old (dont use)', 'Thursday', 'Write 3 hooks for a TikTok about…'], ['captions backup', 'Tuesday', 'pov: you finally hit 100kg'], ['ideas 2am', 'Monday', 'what if the hook is just the price']];
+  const R = (list, y0) => list.map(([a, b, c], i) => `<div class="row" style="top:${y0 + i * 66}px;${i === 0 ? 'border-radius:10px 10px 0 0' : ''}${i === list.length - 1 ? 'border-radius:0 0 10px 10px' : ''}${hl && y0 === 236 && i === 0 ? ';background:#d1d1d6' : ''}"><div class="rt">${a}</div><div class="rs"><b>${b}</b>${c}</div></div>${i ? `<div class="sep" style="top:${y0 + i * 66}px"></div>` : ''}`).join('');
+  h += R(rows, 236);
+  h += `<div class="hd" style="top:386px">Previous 7 Days</div>` + R(rows2, 420);
+  return h;
+}
+function noteView() {
+  let h = `<div id="note">`;
+  h += `<div id="body" class="a" style="left:0;top:0;width:393px;height:2000px">`;
+  h += `<div class="t" style="left:0;width:393px;text-align:center;top:104px;font-size:13px;color:#8a8a8e">22 November 2026 at 1:47 AM</div>`;
+  h += `<div class="t" style="left:18px;top:128px;font-size:27px;font-weight:700;color:#111;line-height:32px">PROMPTS — DO NOT<br>DELETE</div>`;
+  PROMPTS.forEach((p, i) => { h += `<div class="ln" style="top:${206 + i * 25}px">${p.startsWith('↓') || p.startsWith('DONT') ? `<b>${p}</b>` : '– ' + p}</div>`; });
+  h += `</div>`;
+  h += `<div class="a" style="left:0;top:0;width:393px;height:96px;background:#fff;border-bottom:.5px solid rgba(0,0,0,${NAVLINE})"></div>` + status();
+  h += `<div class="a yel" style="left:10px;top:62px;display:flex;align-items:center;gap:4px;font-size:17px">${yIc(12, 20, '0 0 12 20', 'M10 2L2 10l8 8', 2.6)}Notes</div>`;
+  h += `<div class="a" style="left:300px;top:60px">${yIc(22, 26, '0 0 22 26', 'M11 2v15M6 7l5-5 5 5M4 11H2v13h18V11h-2', 1.8)}</div>`;
+  h += `<div class="a" style="left:345px;top:62px">${yIc(24, 24, '0 0 24 24', 'M12 2a10 10 0 100 20 10 10 0 000-20z', 1.6)}</div><div class="t yel" style="left:350px;top:62px;font-size:18px;font-weight:700;letter-spacing:1px">···</div>`;
+  h += `</div>`;
+  return h;
+}
+let NAVLINE = 0;
+function frame(k, t) {
+  // camera: slight angle + handheld drift
+  const dx = Math.sin(t * 3.1) * 6 + Math.sin(t * 7.3) * 2, dy = Math.cos(t * 2.4) * 5;
+  // push transition
+  const push = CM.clamp((k - 17) / 5), pe = CM.ease(push);
+  const showNote = k >= 17;
+  // scroll: flick k26-40, settle, second flick k44-56
+  const s1 = CM.ease(CM.clamp((k - 26) / 12)) * 300, s2 = CM.ease(CM.clamp((k - 44) / 12)) * 260, scroll = s1 + s2;
+  NAVLINE = scroll > 20 ? .18 : 0;
+  const vel = (k >= 26 && k < 38) || (k >= 44 && k < 56) ? 1 : 0;
+  let ph = `<div class="a" style="left:0;top:0;width:393px;height:900px;transform:translateX(${-pe * 110}px)">${listView(k >= 12 && k < 18)}</div>`;
+  if (showNote) ph += `<div class="a" style="left:0;top:0;width:393px;height:900px;transform:translateX(${(1 - pe) * 393}px);box-shadow:-8px 0 20px rgba(0,0,0,${.15 * (1 - pe)})">${noteView()}</div>`;
+  let h = `<div class="a" style="left:0;top:0;width:1440px;height:1080px;transform:translate(${dx}px,${dy}px) rotate(-3.2deg);transform-origin:720px 540px">`;
+  // phone body: screen + bezel + metal frame (right side visible)
+  h += `<div class="a" style="left:70px;top:-120px;width:${393 * S}px;height:${520 * S}px;overflow:hidden;border-radius:60px;background:#000">
+          <div id="ph" style="left:0;top:${-36 * S}px;transform:scale(${S})">${ph}</div></div>`;
+  h += `<div class="a" style="left:${70 + 393 * S}px;top:-140px;width:30px;height:1400px;background:#070707"></div><div class="a" style="left:${100 + 393 * S}px;top:-140px;width:56px;height:1400px;background:linear-gradient(90deg,#3d3427,#cbbb98 40%,#ece2c8 55%,#857552 85%,#2e271c)"></div>`;
+  // iridescent light leak on the glass (subtle)
+  h += `<div class="a" style="left:-300px;top:-200px;width:2000px;height:1500px;mix-blend-mode:screen;opacity:.35;transform:translateX(${k * 5}px) rotate(18deg);background:linear-gradient(90deg,transparent 30%,rgba(255,120,60,.5) 38%,rgba(255,230,90,.45) 44%,rgba(110,255,160,.45) 50%,rgba(90,210,255,.4) 56%,rgba(240,130,255,.35) 62%,transparent 70%)"></div>`;
+  h += '</div>';
+  // room beyond the phone (out of focus)
+  h += `<div class="a" style="left:0;top:0;width:1440px;height:1080px;filter:blur(18px);pointer-events:none">`;
+  h += `<div class="a" style="left:${1250 + dx}px;top:-80px;width:400px;height:1300px;background:linear-gradient(180deg,#5a4536,#8a6a52 50%,#3d2e25);transform:rotate(-3deg)"></div>`;
+  // thumb: approach + tap (k6-16), then drag-scroll
+  let tx, ty, show = true;
+  if (k < 6) { tx = 1500; ty = 1150; show = false; }
+  else if (k < 17) { const u = CM.ease(CM.clamp((k - 6) / 6)); tx = CM.lerp(1500, 640, u); ty = CM.lerp(1150, 650 + (k >= 12 && k < 15 ? 10 : 0), u); }
+  else if (k < 24) { const u = CM.ease(CM.clamp((k - 17) / 6)); tx = CM.lerp(640, 1030, u); ty = CM.lerp(650, 1000, u); }
+  else { const ph2 = k < 44 ? CM.clamp((k - 26) / 12) : CM.clamp((k - 44) / 12); const u = CM.ease(ph2); tx = 980 - u * 30; ty = CM.lerp(980, 560, u) + (k >= 38 && k < 44 ? (k - 38) * 70 : 0); if (k >= 56) ty = 560 + (k - 56) * 90; }
+  if (show) h += `<div class="a" style="left:${tx + dx - 90}px;top:${ty + dy - 60}px;width:760px;height:340px;border-radius:200px 140px 140px 220px;transform:rotate(-30deg);transform-origin:90px 120px;background:radial-gradient(ellipse 30% 55% at 14% 42%,#c99a7c 0%,transparent 70%),linear-gradient(165deg,#a87a5e 0%,#7a523e 40%,#3a281f 85%)"></div>`;
+  h += `<div class="a" style="left:${1180 + dx}px;top:${740 + dy}px;width:500px;height:520px;border-radius:250px;background:linear-gradient(120deg,#9c7258,#6a4a3a)"></div>`;
+  h += '</div>';
+  // vignette + filmed softness
+  h += `<div class="a" style="left:0;top:0;width:1440px;height:1080px;background:radial-gradient(ellipse 80% 75% at 45% 50%,transparent 60%,rgba(0,0,0,.35))"></div>`;
+  return { h, scroll, vel };
+}
+window.ready = (async () => { await CM.fonts(); })();
+window.render = async t => {
+  const k = Math.round(t * 24);
+  const { h, scroll, vel } = frame(k, t);
+  scn.innerHTML = `<div style="position:absolute;inset:0;filter:blur(0.7px)">${h}</div>`;
+  const b = document.getElementById('body'); if (b) { b.style.transform = `translateY(${-scroll}px)`; b.style.filter = vel ? 'blur(0.8px)' : ''; }
+};
+</script></body></html>

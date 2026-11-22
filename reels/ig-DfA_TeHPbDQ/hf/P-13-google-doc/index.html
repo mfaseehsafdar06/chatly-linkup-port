@@ -1,0 +1,121 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="../HF-07-meet/common.js"></script>
+<style>
+  #scn{position:absolute;left:0;top:0;width:1440px;height:1080px;overflow:hidden;background:#f9fbfd}
+  #win{position:absolute;left:0;top:0;width:1280px;height:960px;transform-origin:0 0;background:#f9fbfd;font-family:GS,'Google Sans',Roboto,Arial,sans-serif;color:#1f1f1f}
+  .a{position:absolute;box-sizing:border-box}
+  .t{position:absolute;white-space:nowrap;line-height:1}
+  .ic{position:absolute;top:0;width:28px;height:28px;display:flex;align-items:center;justify-content:center}
+  .page{position:absolute;left:232px;top:140px;width:816px;height:1056px;background:#fff;box-shadow:0 1px 3px rgba(60,64,67,.15),0 0 0 .5px #dadce0}
+  .ln{position:absolute;left:96px;font-family:Arial,Helvetica,sans-serif;font-size:15px;line-height:24px;height:24px;white-space:pre;color:#000}
+  .sel{background:#c6dafc}
+  .flash{background:#8ab4f8}
+  .caret{display:inline-block;width:0;height:19px;border-left:2px solid #000;vertical-align:-4px;margin-right:-2px}
+</style>
+</head><body><div id="stage"><div id="scn"><div id="win"></div></div></div>
+<script>
+// P-13 · Google-Docs-style doc "MASTER PROMPTS v12 FINAL" ('This is Faseeh' §4). Full-frame mp4, 84 frames (3.5 s).
+// Camera set-ups with hard cuts, like LinkUp shot 34 (converter):
+//   S1 k0–17  wide: drag-select a prompt line, ⌘C flash (selection flashes k12–13)
+//   S2 k18–35 2x on the page: Enter + paste -> duplicate line appears (k20 / k24)
+//   S3 k36–59 3x on the new line: double-click "gym" (k38), delete (k44), type "study" (k46–54)
+//   S4 k60–83 1.6x: paste again (k62) -> double-click gym (k66), delete (k69), type "sneakers" (k70–76), paste again (k79)
+// Real Docs UI layout (generic doc icon, no Google logo). No captions.
+CM.initGuide();
+const win = document.getElementById('win');
+const BASE = ['Write 3 hooks for a TikTok about gym, in a casual voice, for beginners.',
+  'Write 3 hooks for a TikTok about meal prep, in a casual voice, for students.',
+  'Write 3 hooks for a TikTok about sneakers, in a hype voice, for collectors.',
+  'Write 3 captions for a Reel about gym, short, with 5 hashtags.',
+  'Write 3 hooks for a TikTok about AI tools, in a nerdy voice, for creators.',
+  'Write 3 hooks for a TikTok about study, in a calm voice, for students.',
+  'Write 3 hooks for a TikTok about gym, funnier, for gen z.',
+  'Write 3 hooks for a Short about protein, in a casual voice, for gym bros.',
+  'Write 3 hooks for a TikTok about study, in a casual voice, for night owls.',
+  'Write 3 hooks for a TikTok about sneakers, in a casual voice, for resellers.'];
+const SRC = BASE[0];
+const esc = s => s.replace(/&/g, '&amp;').replace(/</g, '&lt;');
+// returns {lines:[html], caretLine}
+function docState(k) {
+  const L = BASE.map(esc); let extra = [];   // inserted lines after line 0
+  let selLine = -1, selTo = 0, flash = false, caret = null;
+  if (k >= 4 && k < 18) { selLine = 0; selTo = Math.round(CM.clamp((k - 4) / 7) * SRC.length); flash = k === 12 || k === 13; }
+  const word = (s, w) => { const i = s.indexOf(w); return [s.slice(0, i), s.slice(i, i + w.length), s.slice(i + w.length)]; };
+  const typed = (txt, k0, step = 2) => txt.slice(0, Math.max(0, Math.min(txt.length, Math.floor((k - k0) / step) + 1)));
+  // line A (first paste)
+  if (k >= 20) {
+    let a;
+    if (k < 24) a = { html: '', caret: true };
+    else if (k < 38) a = { html: esc(SRC), caret: k < 36 };
+    else if (k < 44) { const [p, w, s] = word(SRC, 'gym'); a = { html: esc(p) + `<span class="sel">${w}</span>` + esc(s) }; }
+    else { const [p, , s] = word(SRC, 'gym'); const ty = k >= 46 ? typed('study', 46) : ''; a = { html: esc(p) + ty + (k < 60 ? '<span class="caret"></span>' : '') + esc(s) }; }
+    extra.push(a);
+  }
+  // line B (second paste) and C (third)
+  if (k >= 62) {
+    let b; const [p, w, s] = word(SRC, 'gym');
+    if (k < 66) b = { html: esc(SRC), caret: true };
+    else if (k < 69) b = { html: esc(p) + `<span class="sel">${w}</span>` + esc(s) };
+    else { const ty = k >= 70 ? typed('sneakers', 70, 1) : ''; b = { html: esc(p) + ty + (k < 79 ? '<span class="caret"></span>' : '') + esc(s) }; }
+    extra.push(b);
+  }
+  if (k >= 79) extra.push({ html: esc(SRC), caret: true });
+  const out = [];
+  L.forEach((s, i) => {
+    let h = s;
+    if (i === selLine && selTo > 0) h = `<span class="${flash ? 'flash' : 'sel'}">${esc(SRC.slice(0, selTo))}</span>${esc(SRC.slice(selTo))}`;
+    if (i === 0 && k >= 18 && k < 20) h += '<span class="caret"></span>';
+    out.push(h);
+    if (i === 0) extra.forEach(e => out.push(e.html + (e.caret ? '<span class="caret"></span>' : '')));
+  });
+  return out;
+}
+const svg = (d, s = 20, c = '#444746', sw = 0) => `<svg width="${s}" height="${s}" viewBox="0 0 24 24">${sw ? `<path d="${d}" fill="none" stroke="${c}" stroke-width="${sw}" stroke-linecap="round" stroke-linejoin="round"/>` : `<path d="${d}" fill="${c}"/>`}</svg>`;
+function chrome() {
+  let h = '';
+  // title bar
+  h += `<div class="a" style="left:0;top:0;width:1280px;height:64px;background:#f9fbfd"></div>`;
+  h += `<svg class="a" style="left:16px;top:12px" width="30" height="40" viewBox="0 0 30 40"><path d="M2 3a3 3 0 013-3h15l10 10v27a3 3 0 01-3 3H5a3 3 0 01-3-3z" fill="#4285f4"/><path d="M20 0l10 10H23a3 3 0 01-3-3z" fill="#a1c2fa"/><path d="M8 20h14M8 25h14M8 30h10" stroke="#fff" stroke-width="2.2"/></svg>`;
+  h += `<div class="t" style="left:60px;top:11px;font-size:18px;color:#1f1f1f">MASTER PROMPTS v12 FINAL</div>`;
+  h += `<div class="a" style="left:300px;top:9px;display:flex;gap:10px">${svg('M12 17.3l-6.2 3.7 1.6-7L2 9.2l7.2-.6L12 2l2.8 6.6 7.2.6-5.4 4.8 1.6 7z', 18, '#444746', 1.6)}${svg('M3 6h6l2 2h10v11H3z', 18, '#444746', 1.6)}${svg('M7 18a5 5 0 01-.6-10A6 6 0 0118 9a4.5 4.5 0 01-.5 9z', 18, '#444746', 1.6)}</div>`;
+  h += ['File', 'Edit', 'View', 'Insert', 'Format', 'Tools', 'Extensions', 'Help'].map((m, i) => `<div class="t" style="left:${60 + [0, 38, 76, 120, 170, 228, 280, 365][i]}px;top:40px;font-size:14px;color:#1f1f1f">${m}</div>`).join('');
+  h += `<div class="a" style="left:1000px;top:16px;display:flex;gap:18px;align-items:center">${svg('M13 3a9 9 0 00-9 9H1l4 4 4-4H6a7 7 0 112 4.9l-1.4 1.4A9 9 0 1013 3zm-1 5v5l4.3 2.5.7-1.2-3.5-2.1V8z', 22)}${svg('M4 4h16v12H7l-3 3z', 22, '#444746', 1.7)}
+     <div style="height:40px;width:104px;border-radius:20px;background:#c2e7ff;display:flex;align-items:center;justify-content:center;gap:8px;font-size:14px;font-weight:500;color:#001d35">${svg('M7 10V7a5 5 0 0110 0v3M5 10h14v11H5z', 18, '#001d35', 1.8)}Share</div>
+     <div style="width:32px;height:32px;border-radius:50%;background:#7b5ea7;color:#fff;display:flex;align-items:center;justify-content:center;font-size:15px">F</div></div>`;
+  // toolbar pill
+  h += `<div class="a" style="left:8px;top:64px;width:1264px;height:40px;border-radius:20px;background:#edf2fa"></div>`;
+  const tb = [['M15.5 14h-.8l-.3-.3a6.5 6.5 0 10-.7.7l.3.3v.8l5 5 1.5-1.5zm-6 0a4.5 4.5 0 110-9 4.5 4.5 0 010 9z'], ['M12.5 8a8.5 8.5 0 00-5.6 2.1L4 7v9h9l-3.6-3.6A6.5 6.5 0 0120 15.5l2.4-.8A9 9 0 0012.5 8z'], ['M18.4 10.6A8.5 8.5 0 004 15l2.4.8a6.5 6.5 0 0110.2-3.4L13 16h9V7z'], ['M19 8H5a3 3 0 00-3 3v6h4v4h12v-4h4v-6a3 3 0 00-3-3zm-3 11H8v-5h8zm3-7a1 1 0 110-2 1 1 0 010 2zm-1-9H6v4h12z'], ['M12.5 16h2.1L9.5 3h-2L2.4 16h2.1l1.1-3h5.7zm-6.1-5l2.1-5.7 2.1 5.7zm15.2.6l-8.1 8.1-3.7-3.7-1.4 1.4 5.1 5.1 9.5-9.5z'], ['M18 4V3a1 1 0 00-1-1H5a1 1 0 00-1 1v4a1 1 0 001 1h12a1 1 0 001-1V6h1v4H9v11a1 1 0 001 1h2a1 1 0 001-1v-9h8V4z']];
+  h += tb.map(([d], i) => `<div class="ic" style="left:${20 + i * 34}px;top:70px">${svg(d, 19)}</div>`).join('');
+  const sep = x => `<div class="a" style="left:${x}px;top:74px;width:1px;height:20px;background:#c7c7c7"></div>`;
+  h += sep(228) + `<div class="t" style="left:240px;top:77px;font-size:14px">100%</div>` + sep(300) + `<div class="t" style="left:312px;top:77px;font-size:14px">Normal text</div>` + sep(408) + `<div class="t" style="left:420px;top:77px;font-size:14px">Arial</div>` + sep(478);
+  h += `<div class="t" style="left:490px;top:76px;font-size:16px">−</div><div class="a" style="left:510px;top:71px;width:34px;height:26px;border:1px solid #747775;border-radius:4px;font-size:14px;display:flex;align-items:center;justify-content:center">11</div><div class="t" style="left:552px;top:75px;font-size:17px">+</div>` + sep(578);
+  h += `<div class="t" style="left:592px;top:76px;font-size:16px;font-weight:700">B</div><div class="t" style="left:624px;top:76px;font-size:16px;font-style:italic;font-family:Georgia">I</div><div class="t" style="left:652px;top:76px;font-size:16px;text-decoration:underline">U</div><div class="t" style="left:682px;top:75px;font-size:16px;border-bottom:3px solid #000;line-height:16px">A</div>`;
+  h += [['M3 17.3V21h3.8l11-11-3.8-3.8zM20.7 7a1 1 0 000-1.4l-2.3-2.3a1 1 0 00-1.4 0l-1.8 1.8L19 9z', 712], ['M3.9 12a3.1 3.1 0 013.1-3.1h4V7H7a5 5 0 000 10h4v-1.9H7A3.1 3.1 0 013.9 12zM8 13h8v-2H8zm9-6h-4v1.9h4a3.1 3.1 0 010 6.2h-4V17h4a5 5 0 000-10z', 760], ['M21 15V6a2 2 0 00-2-2H5a2 2 0 00-2 2v12a2 2 0 002 2h14l2 2zm-3-2H6v-2h12zm0-3H6V8h12z', 794], ['M21 19V5a2 2 0 00-2-2H5a2 2 0 00-2 2v14a2 2 0 002 2h14a2 2 0 002-2zM8.5 13.5l2.5 3 3.5-4.5 4.5 6H5z', 828], ['M3 21h18v-2H3zm0-4h12v-2H3zm0-4h18v-2H3zm0-4h12V7H3zm0-6v2h18V3z', 872], ['M6 7h2.5L5 3.5 1.5 7H4v10H1.5L5 20.5 8.5 17H6zm4-2v2h12V5zm0 14h12v-2H10zm0-6h12v-2H10z', 906], ['M4 10.5a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm0-6a1.5 1.5 0 100 3 1.5 1.5 0 000-3zm0 12a1.5 1.5 0 100 3 1.5 1.5 0 000-3zM7 19h14v-2H7zm0-6h14v-2H7zm0-8v2h14V5z', 950], ['M2 17h2v.5H3v1h1v.5H2v1h3v-4H2zm1-9h1V4H2v1h1zm-1 3h1.8L2 13.1v.9h3v-1H3.2L5 10.9V10H2zm5-6v2h14V5zm0 14h14v-2H7zm0-6h14v-2H7z', 984]].map(([d, x]) => `<div class="ic" style="left:${x}px;top:70px">${svg(d, 19)}</div>`).join('');
+  h += `<div class="a" style="left:1150px;top:70px;display:flex;align-items:center;gap:6px;font-size:14px">${svg('M3 17.3V21h3.8l11-11-3.8-3.8z', 18)}Editing</div>`;
+  // ruler
+  h += `<div class="a" style="left:232px;top:110px;width:816px;height:20px;background:#fff;border-bottom:1px solid #dadce0"></div><div class="a" style="left:232px;top:110px;width:96px;height:20px;background:#eef1f5"></div><div class="a" style="left:952px;top:110px;width:96px;height:20px;background:#eef1f5"></div>`;
+  for (let i = 0; i <= 64; i++) h += `<div class="a" style="left:${232 + i * 12.75}px;top:${i % 8 ? 124 : 118}px;width:1px;height:${i % 8 ? 5 : 11}px;background:#9aa0a6"></div>`;
+  return h;
+}
+let CH = '';
+// camera set-ups: [scale, tx, ty] mapping window px -> screen px
+const CAM = k => k < 18 ? [1.25, -4, -4] : k < 36 ? [2.1, -560, -440] : k < 60 ? [3.1, -950, -780] : [1.65, -280, -260];
+function iBeam(x, y) { return `<svg class="a" style="left:${x - 5}px;top:${y - 11}px" width="10" height="22" viewBox="0 0 10 22"><path d="M1 1h3l1 1 1-1h3M5 2v18M1 21h3l1-1 1 1h3" fill="none" stroke="#000" stroke-width="1.4"/><path d="M1 1h3l1 1 1-1h3M5 2v18M1 21h3l1-1 1 1h3" fill="none" stroke="#fff" stroke-width=".5"/></svg>`; }
+window.ready = (async () => { await CM.fonts(); await document.fonts.load('15px Arial'); CH = chrome(); })();
+window.render = async t => {
+  const k = Math.min(83, Math.round(t * 24));
+  const lines = docState(k);
+  let page = `<div class="ln" style="top:96px;font-size:21px;font-weight:700">MASTER PROMPTS v12 FINAL</div><div class="ln" style="top:136px;color:#5f6368">(copy → paste → change the topic. DO NOT EDIT THE ORIGINALS)</div>`;
+  lines.forEach((l, i) => { page += `<div class="ln" style="top:${178 + i * 26}px">${l}</div>`; });
+  // mouse I-beam position per phase
+  let cur = '';
+  if (k < 18) { const x = 328 + CM.clamp((k - 4) / 7) * 515, y = 140 + 178 + 12 + 6; cur = iBeam(k < 4 ? 320 + k * 2 : x, y); }
+  else if (k >= 36 && k < 46) cur = iBeam(328 + 258, 140 + 178 + 26 + 14);
+  else if (k >= 60 && k < 70) cur = iBeam(328 + 258, 140 + 178 + 52 + 14);
+  win.innerHTML = CH + `<div class="page">${page}</div>` + cur;
+  const [s, tx, ty] = CAM(k);
+  const dx = Math.sin(t * 2.3) * 4, dy = Math.cos(t * 1.9) * 3;
+  win.style.transform = `translate(${tx + dx}px,${ty + dy}px) scale(${s})`;
+  win.style.filter = k >= 18 ? 'blur(0.5px)' : 'blur(0.3px)';
+};
+</script></body></html>
