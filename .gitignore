@@ -1,0 +1,8 @@
+.DS_Store
+__pycache__/
+.env
+frames_*/
+refs/ref.mp4
+refs/f10/
+seg1923/ref24/
+*.wav

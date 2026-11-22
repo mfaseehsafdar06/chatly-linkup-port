@@ -1,0 +1,175 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000}canvas{display:block}</style></head>
+<body><canvas id="c" width="1440" height="1080"></canvas>
+<script>
+// Recreation of IG DfA_TeHPbDQ 19.167–23.417 s (ref frames n=4..105 at 24 fps, n counted from 19.000 s).
+// Local frame k = n-4, tau = k/24. Output 1440x1080.
+const W=1440,H=1080,FPS=24;
+const C=document.getElementById('c'),X=C.getContext('2d');
+const A=document.createElement('canvas');A.width=W;A.height=H;const AX=A.getContext('2d');
+const N=n=>(n-4)/FPS;               // ref frame index -> local seconds
+const P=window.PARAMS||{};
+let MAP=null,GLOBES=[];
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+// ---------------- crayon globe ----------------
+const GC={x:720,y:558,r:366};          // out px (ref centre 480,372 r 243 x1.5)
+// continents traced by eye in ref px around centre (480,372)
+const CONT=[
+ [[395,138],[418,178],[446,216],[412,262],[382,320],[356,372],[346,410],[300,426],[252,410],[236,370],[240,300],[268,230],[320,170]],
+ [[524,216],[560,186],[615,170],[662,200],[700,248],[716,286],[680,276],[640,252],[590,242],[530,232]],
+ [[520,300],[572,290],[622,284],[682,300],[722,332],[724,400],[702,480],[652,540],[620,560],[602,470],[562,392],[530,350]],
+ [[350,440],[382,424],[452,420],[502,432],[540,470],[546,522],[532,600],[500,614],[450,612],[432,562],[402,512],[362,482]]];
+function jag(pts,amp,R){ // densify + jitter
+  const o=[];for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];
+    for(let s=0;s<6;s++){const t=s/6;o.push([lerp(a[0],b[0],t)+(R()-.5)*amp,lerp(a[1],b[1],t)+(R()-.5)*amp])}}return o}
+function crayon(g,clipFn,cols,R,dens,dir){
+  g.save();clipFn(g);g.clip();
+  for(let i=0;i<dens;i++){const x=R()*W,y=R()*H,a=dir+(R()-.5)*1.3,l=14+R()*34;
+    g.strokeStyle=cols[(R()*cols.length)|0];g.globalAlpha=.30+R()*.45;g.lineWidth=2.5+R()*5;g.lineCap='round';
+    g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(a)*l,y+Math.sin(a)*l);g.stroke()}
+  g.restore();g.globalAlpha=1}
+function makeGlobe(seed){
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');const R=rng(seed);
+  const toOut=p=>[GC.x+(p[0]-480)*1.5,GC.y+(p[1]-372)*1.5];
+  const circ=[];for(let i=0;i<120;i++){const a=i/120*Math.PI*2,r=GC.r*(1+(R()-.5)*.012);circ.push([GC.x+Math.cos(a)*r,GC.y+Math.sin(a)*r])}
+  const poly=(pts)=>g2=>{g2.beginPath();pts.forEach((p,i)=>i?g2.lineTo(p[0],p[1]):g2.moveTo(p[0],p[1]));g2.closePath()};
+  const strokes=(clipFn,cols,n,lmin,lmax,wmin,wmax,amin,amax,dirFn)=>{g.save();clipFn(g);g.clip();g.lineCap='round';
+    for(let i=0;i<n;i++){const x=GC.x+(R()-.5)*2.1*GC.r,y=GC.y+(R()-.5)*2.1*GC.r,a=dirFn(x,y)+(R()-.5)*.5,l=lmin+R()*(lmax-lmin);
+      g.strokeStyle=cols[(R()*cols.length)|0];g.globalAlpha=amin+R()*(amax-amin);g.lineWidth=wmin+R()*(wmax-wmin);
+      g.beginPath();g.moveTo(x-Math.cos(a)*l/2,y-Math.sin(a)*l/2);g.lineTo(x+Math.cos(a)*l/2,y+Math.sin(a)*l/2);g.stroke()}g.restore();g.globalAlpha=1};
+  const swirl=(x,y)=>-0.9+Math.sin((x-GC.x)/170)*.5+Math.cos((y-GC.y)/210)*.4;
+  // ocean base + texture
+  g.save();poly(circ)(g);g.fillStyle='#45bdee';g.fill();g.restore();
+  strokes(poly(circ),['#1c9fdc','#55c4ef','#2aaee6','#73d0f2','#1490d0'],5200,30,80,5,11,.25,.55,swirl);
+  const sh=[[R()*10-5,R()*10-5],[R()*10-5,R()*10-5],[R()*10-5,R()*10-5],[R()*10-5,R()*10-5]];
+  const conts=CONT.map((c,i)=>jag(c.map(p=>toOut([p[0]+sh[i][0],p[1]+sh[i][1]])),10,R));
+  conts.forEach(c=>{const clipC=g2=>{poly(circ)(g2);g2.clip();poly(c)(g2)};
+    g.save();clipC(g);g.fillStyle='#22c058';g.fill();g.restore();
+    const d0=R()*3;strokes(clipC,['#16b24c','#34cc66','#0fa646','#48d676','#1fbb54'],2600,25,70,5,10,.3,.6,()=>d0)});
+  // crayon tooth: light speckles everywhere inside globe
+  g.save();poly(circ)(g);g.clip();
+  for(let i=0;i<5200;i++){const x=GC.x+(R()-.5)*2*GC.r,y=GC.y+(R()-.5)*2*GC.r;g.fillStyle=`rgba(255,255,255,${.25+R()*.55})`;g.fillRect(x,y,1+R()*3,1+R()*1.5)}
+  g.restore();
+  // rough rim: a few short strokes along the edge in blue
+  g.save();g.lineCap='round';for(let i=0;i<260;i++){const a=R()*Math.PI*2,r=GC.r*(.985+R()*.03);g.strokeStyle=R()<.5?'#2aaee6':'#57c3ee';g.globalAlpha=.35;g.lineWidth=2+R()*3;
+    g.beginPath();g.arc(GC.x,GC.y,r,a,a+.05+R()*.08);g.stroke()}g.restore();g.globalAlpha=1;
+  return cv}
+function paper(g,R){g.fillStyle='rgb(246,248,250)';g.fillRect(0,0,W,H);
+  for(let i=0;i<70;i++){g.fillStyle=`rgba(${60+R()*80},${60+R()*60},${70+R()*60},${.25+R()*.4})`;g.fillRect(R()*W,R()*H,1.5,1.5+R()*3)}}
+
+const WORDS=[ // text, left x, baseline y (out px), appear tau
+ ['all',307,292,N(4)],['over',1090,355,N(11)],['the',204,805,N(16)],['world',1012,913,N(22)]];
+function drawGlobeScene(g,t){
+  const k=Math.floor(t*FPS+1e-6);const v=Math.floor(k/2)%GLOBES.length;
+  const R=rng(9000+Math.floor(k/2));paper(g,R);
+  const off=[[0,0],[-5,3],[4,-2],[2,5]][v];
+  g.drawImage(GLOBES[v],off[0],off[1]);
+  g.fillStyle='#101012';g.font=`700 ${P.fs||98}px "Helvetica Neue"`;g.textBaseline='alphabetic';
+  WORDS.forEach(w=>{if(t>=w[3]-1e-6)g.fillText(w[0],w[1],w[2])})}
+
+// ---------------- map ----------------
+// map.jpg = CIA 2015 political map, hi-res crop x1500..11500,y2000..7500 scaled 0.6
+const M=p=>[(p[0]-1000)*.6,(p[1]-1300)*.6];
+const SING=M([9670,5040]),AUS=M([10450,6039]),CAN=M([3510,3107]),NYC=M([4183,3627]),UK=M([6292,3162]);
+// camera: map point that sits at screen (sx,sy) at scale s
+const cam=(mp,sx,sy,s)=>({cx:mp[0]-(sx-W/2)/s,cy:mp[1]-(sy-H/2)/s,s});
+const CAM={
+ S1:cam(SING,712,528,.72), S2:cam(AUS,700,528,.78), S3:cam(CAN,620,410,.8),
+ S4:cam(NYC,688,675,.8), S5:cam(UK,690,585,.98), S6:null};
+CAM.S6={cx:CAN[0]+(720-110)/.31,cy:CAN[1]+(540-300)/.31,s:.31};
+const s2m=(c,x,y)=>[c.cx+(x-W/2)/c.s,c.cy+(y-H/2)/c.s];
+const SHOTS=[ // [name, start tau, end tau]
+ ['G',0,N(31)],['S1',N(31),N(49)],['S2',N(49),N(63)],['S3',N(63),N(74)],['S4',N(74),N(88)],['S5',N(88),N(98.5)],['Z',N(98.5),N(102)],['S6',N(102),99]];
+// marks (in map coords) -----------------------------------------------------
+function ellipsePts(c,rx,ry,rot,a0,dir,turns,seed){const R=rng(seed);const ph=R()*6,ph2=R()*6;const o=[];const n=120;
+  for(let i=0;i<=n;i++){const u=i/n,a=a0+dir*u*turns*Math.PI*2;
+    const k=1+.05*Math.sin(2*a+ph)+.03*Math.sin(3*a+ph2)-.06*u*(u>.85?1:0);
+    let x=Math.cos(a)*rx*k,y=Math.sin(a)*ry*k;const cr=Math.cos(rot),sr=Math.sin(rot);o.push([c[0]+x*cr-y*sr,c[1]+x*sr+y*cr])}return o}
+function scrEllipse(camN,sx,sy,rx,ry,rot,a0,dir,turns,seed){const c=CAM[camN];const m=s2m(c,sx,sy);return ellipsePts(m,rx/c.s,ry/c.s,rot,a0,dir,turns,seed)}
+function scrPoly(camN,pts){const c=CAM[camN];return pts.map(p=>s2m(c,p[0],p[1]))}
+const MARKS=[
+ {pts:scrEllipse('S1',698,513,182,125,-.05,-1.9,-1,1.08,11),t0:N(28),t1:N(39),w:20,shot:'S1',ang:1.53,exitT:N(39.5),exitD:[.35,1]},
+ {pts:scrEllipse('S2',725,538,255,150,.03,-1.45,-1,1.08,12),t0:N(46),t1:N(55.5),vis:N(49),w:20,shot:'S2',ang:1.71,exitT:N(56.5),exitD:[.3,1]},
+ {pts:scrEllipse('S3',580,366,256,158,-.06,3.14,1,1.06,13),t0:N(61),t1:N(70),w:20,shot:'S3',ang:3.0,exitT:N(70.5),exitD:[-1,.12]},
+ {pts:scrEllipse('S4',688,675,152,123,.05,-2.0,-1,1.07,14),t0:N(73.90),t1:N(73.91),w:20,shot:null},
+ {pts:scrPoly('S4',[[648,477],[788,300]]),t0:N(73.91),t1:N(73.92),w:21,shot:null},
+ {pts:scrPoly('S4',[[735,397],[780,517],[893,360]]),t0:N(73.92),t1:N(73.93),w:21,shot:null},
+ {pts:scrPoly('S4',[[918,375],[942,450]]),t0:N(73.93),t1:N(73.94),w:21,shot:null},
+ {pts:scrPoly('S4',[[1077,402],[900,585]]),t0:N(73.94),t1:N(73.95),w:21,shot:null},
+ {pts:scrPoly('S4',[[1133,487],[1025,607]]),t0:N(74),t1:N(77),w:21,shot:'S4',ang:2.0,exitT:N(80.5),exitD:[.45,1]},
+ {pts:scrPoly('S4',[[963,676],[958,688],[968,692],[970,680]]),t0:N(79),t1:N(80),w:22,shot:'S4',ang:2.0,exitT:N(80.5),exitD:[.45,1]},
+ {pts:scrEllipse('S5',710,580,208,182,-.25,-1.5,1,1.07,15),t0:N(86),t1:N(93.5),w:20,shot:'S5',ang:2.88,exitT:N(93.8),exitD:[-1,.25]}];
+function polyLen(p){let L=[0];for(let i=1;i<p.length;i++)L.push(L[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));return L}
+const HOME=['S1','S2','S3','S4','S4','S4','S4','S4','S4','S4','S5'];MARKS.forEach((m,i)=>{m.L=polyLen(m.pts);m.hs=CAM[HOME[i]].s});
+function partial(m,pr){const tot=m.L[m.L.length-1]*pr;const o=[m.pts[0]];for(let i=1;i<m.pts.length;i++){if(m.L[i]<=tot)o.push(m.pts[i]);else{const a=m.pts[i-1],b=m.pts[i],u=(tot-m.L[i-1])/(m.L[i]-m.L[i-1]);o.push([lerp(a[0],b[0],u),lerp(a[1],b[1],u)]);break}}return o}
+const progress=(m,t)=>clamp((t-m.t0)/(m.t1-m.t0));
+function drawMarks(g,c,t){
+  g.save();g.lineCap='round';g.lineJoin='round';
+  MARKS.forEach(m=>{const pr=progress(m,t);if(pr<=0)return;if(m.vis&&t<m.vis-1e-9)return;const pts=partial(m,pr).map(p=>[(p[0]-c.cx)*c.s+W/2,(p[1]-c.cy)*c.s+H/2]);
+    const w=m.w/m.hs*c.s;
+    g.strokeStyle='rgba(150,12,26,.55)';g.lineWidth=w*1.25;g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();
+    g.strokeStyle='rgb(206,26,40)';g.lineWidth=w*.85;g.stroke()});
+  g.restore()}
+// handheld drift per shot
+function drift(name,t){const s=name.charCodeAt(1)||7;return[Math.sin(t*2.1+s)*4+Math.sin(t*5.3+s*2)*1.5,Math.cos(t*1.7+s)*3+Math.sin(t*4.1+s)*1.2]}
+function drawMapView(g,c){g.fillStyle='#dff1f6';g.fillRect(0,0,W,H);
+  g.save();g.setTransform(c.s,0,0,c.s,W/2-c.cx*c.s,H/2-c.cy*c.s);g.drawImage(MAP,0,0);g.restore()}
+
+// ---------------- marker + fingers ----------------
+function drawMarker(g,tx,ty,ang){
+  const K=(P.mscale||1)*({S1:1.25,S2:1.25,S3:1.45,S4:1.2,S5:1.5}[CURSHOT]||1.2);
+  const wAt=u=>140+u*.26;
+  const lg=(u,cols)=>{const w=wAt(u)/2;const gr=g.createLinearGradient(0,-w,0,w);cols.forEach((c,i)=>gr.addColorStop(i/(cols.length-1),c));return gr};
+  const body=(u0,u1,fill,r0=0)=>{g.fillStyle=fill;g.beginPath();g.moveTo(u0+r0,-wAt(u0)/2);g.lineTo(u1,-wAt(u1)/2);g.lineTo(u1,wAt(u1)/2);g.lineTo(u0+r0,wAt(u0)/2);
+    if(r0){g.quadraticCurveTo(u0,wAt(u0)/2,u0,wAt(u0)/2-r0);g.lineTo(u0,-wAt(u0)/2+r0);g.quadraticCurveTo(u0,-wAt(u0)/2,u0+r0,-wAt(u0)/2)}g.closePath();g.fill()};
+  const skin=(u0,u1,v,r,blur)=>{g.save();g.filter=`blur(${blur}px)`;const gr=g.createLinearGradient(0,v-r,0,v+r);gr.addColorStop(0,'#c98d73');gr.addColorStop(.35,'#f0c6ae');gr.addColorStop(.7,'#e4ab92');gr.addColorStop(1,'#b97a62');
+    g.fillStyle=gr;g.beginPath();g.roundRect(u0,v-r,u1-u0,2*r,r);g.fill();
+    g.fillStyle='rgba(250,222,210,.75)';g.beginPath();g.ellipse(u0+r*.9,v-r*.15,r*.55,r*.42,0,0,7);g.fill();g.restore()};
+  g.save();g.translate(tx,ty);g.rotate(ang);g.scale(K,K);
+  skin(470,1300,-wAt(470)*.56,62,P.fblur||9);           // finger behind (far side)
+  g.filter=`blur(${P.mblur||5}px)`;
+  body(170,1500,lg(600,['#b9bcb7','#eef0ec','#ffffff','#f3f4f0','#a9ada8']));
+  g.strokeStyle='rgba(38,186,128,.95)';g.lineWidth=20;g.lineCap='round';
+  for(let j=0;j<2;j++){g.beginPath();for(let i=0;i<8;i++){const u=360+i*60,v=(j?1:-1)*wAt(u)*.2+(i%2?18:-18);i?g.lineTo(u,v):g.moveTo(u,v)}g.stroke()}
+  body(95,175,lg(140,['#7e0a16','#d8222f','#f24a55','#c41a28','#6e0812']));   // collar
+  body(0,105,lg(50,['#8a0c18','#e3303d','#f65b64','#cf1f2d','#7a0a15']),24);  // chisel cap
+  g.fillStyle='rgba(255,170,175,.35)';g.fillRect(14,-wAt(20)*.32,80,9);      // cap highlight
+  g.restore();
+  g.save();g.translate(tx,ty);g.rotate(ang);g.scale(K,K);
+  skin(560,1400,wAt(560)*.6,78,(P.fblur||9)+2);         // thumb in front (near side)
+  g.restore()}
+function markerState(t){ // returns {x,y,ang} in screen coords or null, for the current shot
+  const sh=shotAt(t);if(!sh)return null;const c=CAM[sh[0]];if(!c)return null;
+  const ms=MARKS.filter(m=>m.shot===sh[0]);if(!ms.length)return null;
+  // active mark = last whose t0 <= t
+  let m=ms[0];ms.forEach(q=>{if(t>=q.t0-0.25)m=q});
+  const pr=progress(m,t);const pts=partial(m,Math.max(pr,.001));const p=pts[pts.length-1];
+  let x=(p[0]-c.cx)*c.s+W/2,y=(p[1]-c.cy)*c.s+H/2;
+  const exitT=m.exitT; if(t>exitT){const u=(t-exitT)*FPS;x+=m.exitD[0]*u*u*95;y+=m.exitD[1]*u*u*95}
+  return{x,y,ang:m.ang}}
+function shotAt(t){return SHOTS.find(s=>t>=s[1]-1e-9&&t<s[2]-1e-9)}
+
+// ---------------- frame ----------------
+let CURSHOT='';function scene(g,t){const sh=shotAt(t);CURSHOT=sh[0];
+  if(sh[0]==='G'){drawGlobeScene(g,t);return}
+  let c;
+  if(sh[0]==='Z'){const q=clamp((t-sh[1])/(sh[2]-sh[1]));const u=q*q*(3-2*q);const a=CAM.S5,b=CAM.S6;
+    const fx=(a.s*a.cx-b.s*b.cx)/(a.s-b.s),fy=(a.s*a.cy-b.s*b.cy)/(a.s-b.s);const sc=Math.exp(lerp(Math.log(a.s),Math.log(b.s),u));
+    c={cx:fx-(fx-a.cx)*a.s/sc,cy:fy-(fy-a.cy)*a.s/sc,s:sc}}
+  else{const b=CAM[sh[0]];const d=drift(sh[0],t);c={cx:b.cx-d[0]/b.s,cy:b.cy-d[1]/b.s,s:b.s*(1+(t-sh[1])*.012)}}
+  drawMapView(g,c);drawMarks(g,c,t);
+  const ms=markerState(t);if(ms)drawMarker(g,ms.x,ms.y,ms.ang)}
+window.render=function(t){
+  const sh=shotAt(t);const n=sh&&sh[0]==='G'?1:(sh[0]==='Z'?24:(P.sub||6));const shutter=sh[0]==='Z'?(P.zsh||.35):.5;
+  if(n===1){scene(X,t);return}
+  X.clearRect(0,0,W,H);
+  for(let i=0;i<n;i++){const ts=t+(i/n-.5)*shutter/FPS;AX.setTransform(1,0,0,1,0,0);AX.filter='none';scene(AX,Math.max(sh[1],ts));X.globalAlpha=1/(i+1);X.drawImage(A,0,0)}
+  X.globalAlpha=1};
+window.ready=(async()=>{MAP=new Image();MAP.src='src/map2.jpg';await MAP.decode();
+  await document.fonts.load('700 98px "Helvetica Neue"');
+  for(let s=0;s<4;s++)GLOBES.push(makeGlobe(101+s*17));return true})();
+</script></body></html>

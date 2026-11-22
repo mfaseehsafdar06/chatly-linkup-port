@@ -1,0 +1,161 @@
+<!doctype html><html><head><meta charset="utf-8">
+<style>html,body{margin:0;background:#000}canvas{display:block}</style></head>
+<body><canvas id="c" width="1440" height="1080"></canvas>
+<script>
+// Recreation of IG DfA_TeHPbDQ 19.167–23.417 s (ref frames n=4..105 at 24 fps, n counted from 19.000 s).
+// Local frame k = n-4, tau = k/24. Output 1440x1080.
+const W=1440,H=1080,FPS=24;
+const C=document.getElementById('c'),X=C.getContext('2d');
+const A=document.createElement('canvas');A.width=W;A.height=H;const AX=A.getContext('2d');
+const N=n=>(n-4)/FPS;               // ref frame index -> local seconds
+const P=window.PARAMS||{};
+let MAP=null,GLOBES=[];
+function rng(s){return()=>{s|=0;s=s+0x6D2B79F5|0;let t=Math.imul(s^s>>>15,1|s);t=t+Math.imul(t^t>>>7,61|t)^t;return((t^t>>>14)>>>0)/4294967296}}
+const clamp=(v,a=0,b=1)=>Math.max(a,Math.min(b,v));
+const ease=t=>t<.5?2*t*t:1-Math.pow(-2*t+2,2)/2;
+const lerp=(a,b,t)=>a+(b-a)*t;
+
+// ---------------- crayon globe ----------------
+const GC={x:720,y:558,r:366};          // out px (ref centre 480,372 r 243 x1.5)
+// continents traced by eye in ref px around centre (480,372)
+const CONT=[
+ [[395,138],[418,178],[446,216],[412,262],[382,320],[356,372],[346,410],[300,426],[252,410],[236,370],[240,300],[268,230],[320,170]],
+ [[524,216],[560,186],[615,170],[662,200],[700,248],[716,286],[680,276],[640,252],[590,242],[530,232]],
+ [[520,300],[572,290],[622,284],[682,300],[722,332],[724,400],[702,480],[652,540],[620,560],[602,470],[562,392],[530,350]],
+ [[350,440],[382,424],[452,420],[502,432],[540,470],[546,522],[532,600],[500,614],[450,612],[432,562],[402,512],[362,482]]];
+function jag(pts,amp,R){ // densify + jitter
+  const o=[];for(let i=0;i<pts.length;i++){const a=pts[i],b=pts[(i+1)%pts.length];
+    for(let s=0;s<6;s++){const t=s/6;o.push([lerp(a[0],b[0],t)+(R()-.5)*amp,lerp(a[1],b[1],t)+(R()-.5)*amp])}}return o}
+function crayon(g,clipFn,cols,R,dens,dir){
+  g.save();clipFn(g);g.clip();
+  for(let i=0;i<dens;i++){const x=R()*W,y=R()*H,a=dir+(R()-.5)*1.3,l=14+R()*34;
+    g.strokeStyle=cols[(R()*cols.length)|0];g.globalAlpha=.30+R()*.45;g.lineWidth=2.5+R()*5;g.lineCap='round';
+    g.beginPath();g.moveTo(x,y);g.lineTo(x+Math.cos(a)*l,y+Math.sin(a)*l);g.stroke()}
+  g.restore();g.globalAlpha=1}
+function makeGlobe(seed){
+  const cv=document.createElement('canvas');cv.width=W;cv.height=H;const g=cv.getContext('2d');const R=rng(seed);
+  const toOut=p=>[GC.x+(p[0]-480)*1.5,GC.y+(p[1]-372)*1.5];
+  // circle outline with crayon roughness
+  const circ=[];for(let i=0;i<96;i++){const a=i/96*Math.PI*2,r=GC.r*(1+(R()-.5)*.018);circ.push([GC.x+Math.cos(a)*r,GC.y+Math.sin(a)*r])}
+  const poly=(pts)=>g2=>{g2.beginPath();pts.forEach((p,i)=>i?g2.lineTo(p[0],p[1]):g2.moveTo(p[0],p[1]));g2.closePath()};
+  // blue base: dense
+  crayon(g,poly(circ),['#1fa7e0','#33b4e6','#1693d3','#4ac0ec','#0f86c9','#5bc6ee'],R,26000,-0.9);
+  const conts=CONT.map(c=>jag(c.map(toOut),9,R));
+  conts.forEach(c=>{const clipC=g2=>{poly(circ)(g2);g2.clip();poly(c)(g2)};
+    crayon(g,clipC,['#22c45a','#14b84e','#35cf68','#0fa845','#4bd877','#1bbd55'],R,9000,0.7+R()*1.2)});
+  // paper speckle (crayon skips): punch light dots
+  g.save();poly(circ)(g);g.clip();g.globalCompositeOperation='destination-out';
+  for(let i=0;i<9000;i++){const x=GC.x+(R()-.5)*2*GC.r,y=GC.y+(R()-.5)*2*GC.r;g.globalAlpha=.25+R()*.6;g.fillRect(x,y,1+R()*2.2,1+R()*1.6)}
+  g.restore();
+  return cv}
+function paper(g,R){g.fillStyle='rgb(246,248,250)';g.fillRect(0,0,W,H);
+  for(let i=0;i<70;i++){g.fillStyle=`rgba(${60+R()*80},${60+R()*60},${70+R()*60},${.25+R()*.4})`;g.fillRect(R()*W,R()*H,1.5,1.5+R()*3)}}
+
+const WORDS=[ // text, left x, baseline y (out px), appear tau
+ ['all',307,292,N(4)],['over',1090,355,N(11)],['the',204,805,N(16)],['world',1012,913,N(22)]];
+function drawGlobeScene(g,t){
+  const k=Math.floor(t*FPS+1e-6);const v=Math.floor(k/2)%GLOBES.length;
+  const R=rng(9000+Math.floor(k/2));paper(g,R);
+  const off=[[0,0],[-5,3],[4,-2],[2,5]][v];
+  g.drawImage(GLOBES[v],off[0],off[1]);
+  g.fillStyle='#101012';g.font=`700 ${P.fs||98}px "Helvetica Neue"`;g.textBaseline='alphabetic';
+  WORDS.forEach(w=>{if(t>=w[3]-1e-6)g.fillText(w[0],w[1],w[2])})}
+
+// ---------------- map ----------------
+// map.jpg = CIA 2015 political map, hi-res crop x1500..11500,y2000..7500 scaled 0.6
+const M=p=>[(p[0]-1500)*.6,(p[1]-2000)*.6];
+const SING=M([9670,5040]),AUS=M([10450,6039]),CAN=M([3510,3107]),NYC=M([4183,3627]),UK=M([6292,3162]);
+// camera: map point that sits at screen (sx,sy) at scale s
+const cam=(mp,sx,sy,s)=>({cx:mp[0]-(sx-W/2)/s,cy:mp[1]-(sy-H/2)/s,s});
+const CAM={
+ S1:cam(SING,726,519,1.0), S2:cam(AUS,760,640,.85), S3:cam(CAN,627,411,1.0),
+ S4:cam(NYC,700,670,1.0), S5:cam(UK,691,540,1.0), S6:null};
+CAM.S6={cx:3260,cy:1430,s:.30};
+const s2m=(c,x,y)=>[c.cx+(x-W/2)/c.s,c.cy+(y-H/2)/c.s];
+const SHOTS=[ // [name, start tau, end tau]
+ ['G',0,N(31)],['S1',N(31),N(49)],['S2',N(49),N(63)],['S3',N(63),N(74)],['S4',N(74),N(88)],['S5',N(88),N(98.5)],['Z',N(98.5),N(102)],['S6',N(102),99]];
+// marks (in map coords) -----------------------------------------------------
+function ellipsePts(c,rx,ry,rot,a0,dir,turns,seed){const R=rng(seed);const ph=R()*6,ph2=R()*6;const o=[];const n=120;
+  for(let i=0;i<=n;i++){const u=i/n,a=a0+dir*u*turns*Math.PI*2;
+    const k=1+.05*Math.sin(2*a+ph)+.03*Math.sin(3*a+ph2)-.06*u*(u>.85?1:0);
+    let x=Math.cos(a)*rx*k,y=Math.sin(a)*ry*k;const cr=Math.cos(rot),sr=Math.sin(rot);o.push([c[0]+x*cr-y*sr,c[1]+x*sr+y*cr])}return o}
+function scrEllipse(camN,sx,sy,rx,ry,rot,a0,dir,turns,seed){const c=CAM[camN];const m=s2m(c,sx,sy);return ellipsePts(m,rx/c.s,ry/c.s,rot,a0,dir,turns,seed)}
+function scrPoly(camN,pts){const c=CAM[camN];return pts.map(p=>s2m(c,p[0],p[1]))}
+const MARKS=[ // pts(map), t0, t1, width(map px), marker shot, marker angle
+ {pts:scrEllipse('S1',726,519,212,128,-.05,-2.45,-1,1.08,11),t0:N(29.5),t1:N(40),w:13,shot:'S1',ang:1.62,exitT:N(41),exitD:[.5,1]},
+ {pts:scrEllipse('S2',760,640,170,108,.04,-2.2,-1,1.08,12),t0:N(47.5),t1:N(57),w:13/.85*.85,shot:'S2',ang:1.85,exitT:N(58),exitD:[.4,1]},
+ {pts:scrEllipse('S3',627,411,258,170,-.12,3.1,1,1.06,13),t0:N(61.5),t1:N(70.5),w:13,shot:'S3',ang:2.95,exitT:N(71),exitD:[-1,.15]},
+ {pts:scrEllipse('S4',700,670,92,76,.1,-2.6,-1,1.07,14),t0:N(73.90),t1:N(73.91),w:12,shot:null},
+ {pts:scrPoly('S4',[[618,410],[691,108],[756,346],[821,86]]),t0:N(73.91),t1:N(73.92),w:13,shot:null},
+ {pts:scrPoly('S4',[[842,194],[907,324]]),t0:N(73.92),t1:N(73.93),w:13,shot:null},
+ {pts:scrPoly('S4',[[994,130],[907,324],[864,475]]),t0:N(73.93),t1:N(73.94),w:13,shot:null},
+ {pts:scrPoly('S4',[[1037,151],[972,389]]),t0:N(74),t1:N(78.5),w:13,shot:'S4',ang:2.0,exitT:N(82.5),exitD:[.6,1]},
+ {pts:scrPoly('S4',[[961,452],[956,462],[962,468]]),t0:N(80.5),t1:N(81.8),w:15,shot:'S4',ang:2.0,exitT:N(82.5),exitD:[.6,1]},
+ {pts:scrEllipse('S5',691,540,205,170,-.35,-.2,1,1.07,15),t0:N(86.5),t1:N(94),w:13,shot:'S5',ang:2.8,exitT:N(94.2),exitD:[-1,.3]}];
+function polyLen(p){let L=[0];for(let i=1;i<p.length;i++)L.push(L[i-1]+Math.hypot(p[i][0]-p[i-1][0],p[i][1]-p[i-1][1]));return L}
+MARKS.forEach(m=>m.L=polyLen(m.pts));
+function partial(m,pr){const tot=m.L[m.L.length-1]*pr;const o=[m.pts[0]];for(let i=1;i<m.pts.length;i++){if(m.L[i]<=tot)o.push(m.pts[i]);else{const a=m.pts[i-1],b=m.pts[i],u=(tot-m.L[i-1])/(m.L[i]-m.L[i-1]);o.push([lerp(a[0],b[0],u),lerp(a[1],b[1],u)]);break}}return o}
+const progress=(m,t)=>clamp((t-m.t0)/(m.t1-m.t0));
+function drawMarks(g,c,t){
+  g.save();g.lineCap='round';g.lineJoin='round';
+  MARKS.forEach(m=>{const pr=progress(m,t);if(pr<=0)return;const pts=partial(m,pr).map(p=>[(p[0]-c.cx)*c.s+W/2,(p[1]-c.cy)*c.s+H/2]);
+    const w=m.w*c.s;
+    g.strokeStyle='rgba(170,16,28,.55)';g.lineWidth=w*1.25;g.beginPath();pts.forEach((p,i)=>i?g.lineTo(p[0],p[1]):g.moveTo(p[0],p[1]));g.stroke();
+    g.strokeStyle='rgb(158,12,26)';g.lineWidth=w*.9;g.stroke()});
+  g.restore()}
+// handheld drift per shot
+function drift(name,t){const s=name.charCodeAt(1)||7;return[Math.sin(t*2.1+s)*4+Math.sin(t*5.3+s*2)*1.5,Math.cos(t*1.7+s)*3+Math.sin(t*4.1+s)*1.2]}
+function drawMapView(g,c){g.fillStyle='#dff1f6';g.fillRect(0,0,W,H);
+  g.save();g.setTransform(c.s,0,0,c.s,W/2-c.cx*c.s,H/2-c.cy*c.s);g.drawImage(MAP,0,0);g.restore()}
+
+// ---------------- marker + fingers ----------------
+function drawMarker(g,tx,ty,ang){
+  g.save();g.translate(tx,ty);g.rotate(ang);g.filter=`blur(${P.mblur||5}px)`;
+  // fingers (behind) - thumb side
+  const skin=(x,y,rx,ry,sh)=>{const gr=g.createRadialGradient(x-rx*.3,y-ry*.4,2,x,y,Math.max(rx,ry));gr.addColorStop(0,'#f3cdb8');gr.addColorStop(.7,'#e2a88f');gr.addColorStop(1,sh);g.fillStyle=gr;g.beginPath();g.ellipse(x,y,rx,ry,0,0,7);g.fill()};
+  skin(470,-96,190,58,'#c98a72');
+  // barrel
+  const bw=150;
+  let gr=g.createLinearGradient(0,-bw/2,0,bw/2);gr.addColorStop(0,'#cfd2cf');gr.addColorStop(.35,'#fbfbf8');gr.addColorStop(.75,'#eceeea');gr.addColorStop(1,'#b9bdb8');
+  g.fillStyle=gr;g.beginPath();g.roundRect(150,-bw/2,1100,bw,18);g.fill();
+  // green stripes along axis
+  g.fillStyle='rgba(40,190,130,.9)';for(let i=0;i<3;i++){g.beginPath();g.roundRect(330+i*150,-bw/2+40+(i%2)*28,110,16,8);g.fill()}
+  g.fillStyle='rgba(40,190,130,.9)';g.beginPath();g.roundRect(420,-bw/2+100,180,14,7);g.fill();
+  // red collar
+  gr=g.createLinearGradient(0,-bw/2,0,bw/2);gr.addColorStop(0,'#9e0f1e');gr.addColorStop(.35,'#ef3340');gr.addColorStop(.7,'#d61f2d');gr.addColorStop(1,'#8a0c18');
+  g.fillStyle=gr;g.beginPath();g.roundRect(55,-bw/2,135,bw,14);g.fill();
+  // red tip (rounded cone)
+  g.beginPath();g.moveTo(70,-bw/2+6);g.quadraticCurveTo(0,-38,-6,0);g.quadraticCurveTo(0,38,70,bw/2-6);g.closePath();g.fill();
+  // index finger in front
+  skin(380,92,175,60,'#c98a72');
+  g.restore()}
+function markerState(t){ // returns {x,y,ang} in screen coords or null, for the current shot
+  const sh=shotAt(t);if(!sh)return null;const c=CAM[sh[0]];if(!c)return null;
+  const ms=MARKS.filter(m=>m.shot===sh[0]);if(!ms.length)return null;
+  // active mark = last whose t0 <= t
+  let m=ms[0];ms.forEach(q=>{if(t>=q.t0-0.25)m=q});
+  const pr=progress(m,t);const pts=partial(m,Math.max(pr,.001));const p=pts[pts.length-1];
+  let x=(p[0]-c.cx)*c.s+W/2,y=(p[1]-c.cy)*c.s+H/2;
+  const exitT=m.exitT; if(t>exitT){const u=(t-exitT)*FPS;x+=m.exitD[0]*u*u*55;y+=m.exitD[1]*u*u*55}
+  return{x,y,ang:m.ang}}
+function shotAt(t){return SHOTS.find(s=>t>=s[1]-1e-9&&t<s[2]-1e-9)}
+
+// ---------------- frame ----------------
+function scene(g,t){const sh=shotAt(t);
+  if(sh[0]==='G'){drawGlobeScene(g,t);return}
+  let c;
+  if(sh[0]==='Z'){const u=ease(clamp((t-sh[1])/(sh[2]-sh[1])));const a=CAM.S5,b=CAM.S6;
+    const ls=lerp(Math.log(a.s),Math.log(b.s),u);c={cx:lerp(a.cx,b.cx,u),cy:lerp(a.cy,b.cy,u),s:Math.exp(ls)}}
+  else{const b=CAM[sh[0]];const d=drift(sh[0],t);c={cx:b.cx-d[0]/b.s,cy:b.cy-d[1]/b.s,s:b.s*(1+(t-sh[1])*.012)}}
+  drawMapView(g,c);drawMarks(g,c,t);
+  const ms=markerState(t);if(ms)drawMarker(g,ms.x,ms.y,ms.ang)}
+window.render=function(t){
+  const sh=shotAt(t);const n=sh&&sh[0]==='G'?1:(sh[0]==='Z'?10:(P.sub||6));const shutter=sh[0]==='Z'?1.0:.5;
+  if(n===1){scene(X,t);return}
+  X.clearRect(0,0,W,H);
+  for(let i=0;i<n;i++){const ts=t+(i/n-.5)*shutter/FPS;AX.setTransform(1,0,0,1,0,0);AX.filter='none';scene(AX,Math.max(sh[1],ts));X.globalAlpha=1/(i+1);X.drawImage(A,0,0)}
+  X.globalAlpha=1};
+window.ready=(async()=>{MAP=new Image();MAP.src='src/map.jpg';await MAP.decode();
+  await document.fonts.load('700 98px "Helvetica Neue"');
+  for(let s=0;s<4;s++)GLOBES.push(makeGlobe(101+s*17));return true})();
+</script></body></html>
