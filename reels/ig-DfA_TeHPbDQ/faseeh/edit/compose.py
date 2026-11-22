@@ -52,7 +52,7 @@ def live(t, cx=.5, zoom=1.0, cy=.5, src_t=None, seq=None):
     for d in (-1, 1, -2, 2, -3, 3):  # the rough cut has black gaps: never show a black source frame at a cut
         if f is not None and f.mean() > 10: break
         f = seq.frame(i0 + d)
-    f = grade(f); cw, ch = 1440 / zoom, 1080 / zoom
+    cw, ch = 1440 / zoom, 1080 / zoom
     x0 = min(max(0, cx * 1920 - cw / 2), 1920 - cw); y0 = min(max(0, cy * 1080 - ch / 2), 1080 - ch)
     if zoom == 1.0: return f[int(y0):int(y0) + 1080, int(x0):int(x0) + 1440].copy()
     M = np.float32([[zoom, 0, -x0 * zoom], [0, zoom, -y0 * zoom]]); return cv2.warpAffine(f, M, (W, H), flags=cv2.INTER_CUBIC)
@@ -75,7 +75,7 @@ def warp_plate(base, plate, quad):
     wp = cv2.warpPerspective(plate, M, (W, H), flags=cv2.INTER_LINEAR); m = cv2.warpPerspective(np.full((h, w), 255, np.uint8), M, (W, H))
     m = (m.astype(np.float32) / 255)[..., None]; return (base * (1 - m) + wp * m).astype(np.uint8)
 def meet_tile(t_src):  # Faseeh's Meet tile from the 1122 cut (inc. name label)
-    f = grade(PLATE.frame(int(round(t_src * FPS)))); return f[196:878, 494:1432].copy()
+    f = PLATE.frame(int(round(t_src * FPS))); return f[196:878, 494:1432].copy()
 def whip(img, amt, direction=1):  # horizontal motion streak + shift, amt 0..1
     if amt <= 0: return img
     L = int(10 + 150 * amt); k = np.zeros((1, L), np.float32); k[0, :] = 1 / L
@@ -105,7 +105,34 @@ def screen(img, t, z=1.0, cx=.5, cy=.5):
     tx = W / 2 - cx * W * z + dx; ty = H / 2 - cy * H * z + dy
     tx = min(0, max(W - W * z, tx)); ty = min(0, max(H - H * z, ty))
     img = cv2.warpAffine(img, np.float32([[z, 0, tx], [0, z, ty]]), (W, H), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
-    return refscreen(img)
+    return cv2.GaussianBlur(img, (0, 0), .55)
+
+
+# ---- FINISH: one soft cinematic grade over the whole film (HeyClicky look, = chat-apps comp/grade.py, user-approved),
+# plus a soft gradient: warm light falling from the top, gentle shade toward the bottom and corners.
+import grade as _G
+_gy, _gx = np.mgrid[0:H, 0:W].astype(np.float32)
+_r = np.sqrt(((_gx - W / 2) / (W * .62)) ** 2 + ((_gy - H * .46) / (H * .72)) ** 2)
+_FVIG = (1 - .16 * np.clip((_r - .45) / .6, 0, 1) ** 1.7)[..., None]
+_top = np.clip(1 - _gy / (H * .75), 0, 1) ** 1.6 * np.clip(1.15 - np.abs(_gx - W * .38) / (W * .9), 0, 1)
+_WARM = (_top[..., None] * np.float32([150, 205, 255]))            # BGR amber light
+_BOT = (1 - .10 * np.clip((_gy - H * .55) / (H * .45), 0, 1) ** 1.4)[..., None]
+def finish(img, k=1.0):
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB); Lc = lab[..., 0]
+    a = lab[..., 1].astype(np.float32) - 128; b = lab[..., 2].astype(np.float32) - 128; sat = _G.SAT[Lc]
+    a = a * sat + _G.DA[Lc]; b = b * sat + _G.DB[Lc]
+    out = cv2.cvtColor(np.dstack([_G.L_LUT[Lc], np.clip(a + 128, 0, 255).astype(np.uint8), np.clip(b + 128, 0, 255).astype(np.uint8)]), cv2.COLOR_LAB2BGR).astype(np.float32)
+    hi = np.clip((out.max(2, keepdims=True) - 180) / 75, 0, 1) * out; glow = cv2.GaussianBlur(hi, (0, 0), 22)
+    out = 255 - (255 - out) * (1 - .10 * glow / 255)                       # lens bloom
+    # soft film: mute skies/blues (HeyClicky never has a punchy blue), gentle Pro-Mist diffusion
+    hsv = cv2.cvtColor(np.clip(out, 0, 255).astype(np.uint8), cv2.COLOR_BGR2HSV).astype(np.float32)
+    hue = hsv[..., 0]; blue = np.exp(-((hue - 108) / 16) ** 2); hsv[..., 1] *= (1 - .38 * blue) * .94
+    out = cv2.cvtColor(hsv.clip(0, 255).astype(np.uint8), cv2.COLOR_HSV2BGR).astype(np.float32)
+    mist = cv2.GaussianBlur(out, (0, 0), 16); out = out * .86 + mist * .14
+    out = 255 - (255 - out) * (1 - .15 * _WARM / 255)                      # warm top light (screen) - the soft gradient
+    out = out * _BOT * _FVIG
+    if k < 1: out = img.astype(np.float32) * (1 - k) + out * k
+    return np.clip(out, 0, 255).astype(np.uint8)
 
 # ---------------------------------------------------------------- text + stickers
 _tc = {}
@@ -239,7 +266,7 @@ def frame_at(t):
     elif t < 37.3:  # ref 'she's not the only one': small window on black
         img = np.zeros((H, W, 3), np.uint8); p = cv2.resize(meet_tile(10.25 + (t - 35.8)), (420, 315), interpolation=cv2.INTER_AREA)
         img[383:698, 510:930] = p
-    elif t < 39.3:   img = refscreen(gfx('montage', t - 37.3), soft=False)
+    elif t < 39.3:   img = gfx('montage', t - 37.3)
     elif t < 42.0:   img = screen(gfx('notes', t - 39.3), t, 1.0, .5, .5)
     elif t < 45.4:
         lt = t - 42.0; u = ease(lt, 2.3, 3.1); img = screen(gfx('doc', lt), t, 1 + 1.0 * u, .5 + (.47 - .5) * u, .5 + (.42 - .5) * u)
@@ -272,6 +299,7 @@ def frame_at(t):
     elif t < 73.35:
         img = blur_dark(live(72.05, .55), .4, 6); img = over(img, OV['P-05-endcard'].frame(int((t - 72.1) * FPS)))
     else:            img = gfx('outro', t - 73.35)
+    if t < 73.35: img = finish(img)
     # paper stickers slapped on the screens on the VO word (ref: LOCATION / WORKING ON / PRIORITIES / ANYTIME)
     for (t0, t1, k, cx, cy) in SCR_STK:
         if t0 - 1e-6 <= t < t1 - 1e-6: img = pop(img, STK[k], t, t0, cx, cy, hash(k) % 97)

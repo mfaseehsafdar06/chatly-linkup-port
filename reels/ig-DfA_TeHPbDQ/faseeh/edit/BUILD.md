@@ -83,3 +83,13 @@
 - Sage-cream whites (L85, a −11, b +15), lifted blacks and softness, matching the reference.
 - Handheld drift, and eased punch-ins on the Doc, the library list, @hook and the reply.
 - Paper stickers on the VO words (`SCR_STK`): REWRITE, 30x A DAY, ONE WORD, PROMPT LIBRARY, {{ BLANKS }}, ACCOUNT / NICHE / PLATFORM, SEND!, WHOLE TEAM.
+
+## v3 (2026-11-23, "add gradient… soft cinematic colour like HeyClicky")
+**Output:** `out/this-is-faseeh-chatly-v3-4x3.mp4`
+
+- **One grade for the whole film:** `finish()` in compose.py runs on every frame except the official outro, before stickers and captions. It replaces the per-shot live grade and the v2 sage screen tint.
+- **What `finish()` does:**
+  - the HeyClicky Lab grade (the chat-apps grade.py LUTs) + lens bloom
+  - blues and skies muted by 38%, overall saturation −6%
+  - Pro-Mist diffusion at 14%
+  - **the soft gradient:** warm amber light falling from the top left (screen-blended at 15%), a 10% shade toward the bottom, and a vignette
