@@ -1,0 +1,30 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script>
+// P-28 FEEDER ACCOUNTS scroll (F-04_00 plate), FULL-FRAME top-down paper shot, 48 frames (2.0 s).
+// Five red-marker ticks draw on one by one (3 frames each), then boil on 2s. PARAMS.clean=1 renders the no-tick still.
+// ======== CONFIG ========
+const PLATE_H=1190, ROT=-2.2, CENTER=[720,548], PUSH=.035;         // sheet height on screen, tilt, centre, slow push over the clip
+const BOXES=[[.146,.380],[.146,.495],[.130,.613],[.124,.736],[.130,.856]]; // checkbox centres, fractions of the plate (w,h)
+const TICK_ON=[4,12,20,28,36], TICK_DRAW=3;                         // start frame of each tick, frames to draw it
+const TICK=[[-.42,.02],[-.12,.36],[.62,-.62]];                      // tick shape in box units (box ~ .085 of plate width), overshoots up-right
+const BOX_W=.085, INK=19, INKCOL=['rgba(176,14,30,.95)','rgba(222,34,46,.96)'];
+// ========================
+const W=1440,H=1080,P=window.PARAMS||{};const g=document.getElementById('c').getContext('2d');let IM,SURF='rgb(205,205,203)';
+window.ready=(async()=>{IM=await X.load({P:'../../assets/cut/F-04_00.png'});const c=document.createElement('canvas');c.width=20;c.height=20;const q=c.getContext('2d');q.drawImage(IM.P,0,0,40,40,0,0,20,20);
+ const d=q.getImageData(0,0,20,20).data;let r=0,gg=0,b=0;for(let i=0;i<d.length;i+=4){r+=d[i];gg+=d[i+1];b+=d[i+2];}const n=d.length/4;SURF=`rgb(${r/n|0},${gg/n|0},${b/n|0})`;})();
+function tickPts(i,f){const pw=PLATE_H*IM.P.width/IM.P.height,s=BOX_W*pw;const R=HF.rng(HF.hash(i*13,Math.floor(f/2)));const j=()=>(R()-.5)*3.2;
+ const b=BOXES[i];const cx=(b[0]-.5)*pw,cy=(b[1]-.5)*PLATE_H;const base=TICK.map(p=>[cx+p[0]*s*1.5+s*.12,cy+p[1]*s*1.5-s*.05]);
+ const R2=HF.rng(i*7+1);const bend=(R2()-.5)*.25;
+ const pts=[];for(let k=0;k<base.length-1;k++){const a=base[k],c=base[k+1];for(let u=0;u<1;u+=.1){const nx=-(c[1]-a[1]),ny=c[0]-a[0];const bb=Math.sin(u*Math.PI)*bend*(k?1:.4);pts.push([a[0]+(c[0]-a[0])*u+nx*bb+j(),a[1]+(c[1]-a[1])*u+ny*bb+j()]);}}
+ pts.push([base[2][0]+j(),base[2][1]+j()]);return pts;}
+function stroke(G,pts,w,mi){const path=()=>{G.beginPath();pts.forEach((p,i)=>i?G.lineTo(p[0],p[1]):G.moveTo(p[0],p[1]));};G.save();G.lineCap='round';G.lineJoin='round';
+ G.filter='blur(.6px)';G.strokeStyle=INKCOL[0];G.lineWidth=w*1.1;path();G.stroke();G.strokeStyle=INKCOL[1];G.lineWidth=w*.74;path();G.stroke();
+ G.filter='blur(1.2px)';G.globalCompositeOperation='screen';G.strokeStyle='rgba(120,40,40,.35)';G.lineWidth=w*.16;G.setLineDash([w*1.6,w*.9,w*.5,w*1.2]);G.lineDashOffset=mi*37;path();G.stroke();G.restore();}
+window.render=t=>{const f=Math.round(t*24);g.setTransform(1,0,0,1,0,0);g.fillStyle=SURF;g.fillRect(0,0,W,H);
+ const R=HF.rng(5);for(let i=0;i<1500;i++){g.fillStyle=`rgba(0,0,0,${R()*.03})`;g.fillRect(R()*W,R()*H,1+R()*3,1);}
+ const J=HF.jitter(t,4,1.6,.12);const sc=1+PUSH*f/48;g.translate(CENTER[0]+J.dx,CENTER[1]+J.dy);g.rotate(ROT*Math.PI/180+J.rot);g.scale(sc,sc);
+ const pw=PLATE_H*IM.P.width/IM.P.height;g.save();g.shadowColor='rgba(0,0,0,.18)';g.shadowBlur=18;g.shadowOffsetY=6;g.drawImage(IM.P,-pw/2,-PLATE_H/2,pw,PLATE_H);g.restore();
+ if(P.clean)return;
+ TICK_ON.forEach((on,i)=>{if(f<on)return;const pts=tickPts(i,f);const pr=Math.min(1,(f-on+1)/TICK_DRAW);const n=Math.max(2,Math.round(pts.length*pr));stroke(g,pts.slice(0,n),INK,i);});};
+</script></body></html>

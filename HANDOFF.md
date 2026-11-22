@@ -199,3 +199,7 @@ Graphics built so far, all in `hf/P-XX-*/out/` with timings in each `index.html`
 ### 2026-11-22 night: 1122 rough cut received
 - The owner's rough cut is `1122.mov` + `1122.WAV`: the full 72 s VO with 16 live shots and black gaps for graphics. The raw footage stays local (`faseeh/footage/`, not in git).
 - The storyboard with planned graphics is in `reels/ig-DfA_TeHPbDQ/faseeh/storyboard/`: `STORYBOARD-1122.jpg`, `frames/`, `storyboard-1122.json` and `REVIEW-1122.md` (must-fix list: profanity at 10.2 s, 360/week numbers, NY→SF sticker, missing P-14 plates).
+
+### 2026-11-22 late: "This is Faseeh" v1 finished
+- Final film: `reels/ig-DfA_TeHPbDQ/out/this-is-faseeh-chatly-v1-4x3.mp4` (78.3 s, 1440×1080, 24 fps). It's over 95 MB, so it lives on the `big-files` release.
+- How it's built: `reels/ig-DfA_TeHPbDQ/faseeh/edit/BUILD.md`, covering compose.py, audio.py and fix_assets.py, plus the new graphics hf/P-31-posts-math and hf/P-32-notes-montage.

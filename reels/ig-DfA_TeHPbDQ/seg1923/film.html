@@ -67,7 +67,7 @@ function drawGlobeScene(g,t){
   const k=Math.floor(t*FPS+1e-6);const v=Math.floor(k/2)%GLOBES.length;
   g.drawImage(GIMG[v],0,0);
   g.fillStyle='#101012';g.font=`700 ${P.fs||98}px "Helvetica Neue"`;g.textBaseline='alphabetic';
-  WORDS.forEach(w=>{if(t>=w[3]-1e-6)g.fillText(w[0],w[1],w[2])})}
+  if(!P.nowords)WORDS.forEach(w=>{if(t>=w[3]-1e-6)g.fillText(w[0],w[1],w[2])})}
 
 // ---------------- map ----------------
 // map.jpg = CIA 2015 political map, hi-res crop x1500..11500,y2000..7500 scaled 0.6

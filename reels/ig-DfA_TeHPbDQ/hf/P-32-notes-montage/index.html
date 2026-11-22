@@ -1,0 +1,48 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:Hand;src:url(../../faseeh/edit/fonts/CoveredByYourGrace.ttf)}
+html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script>
+// P-32 "Every social media marketer has this."  FULL-FRAME 2.0 s (VO 37.30-39.30).
+// Ref-style quick montage on black (ref 33.3-34.4: photos of friends): here 6 different marketers' Notes windows full of
+// copy-paste prompts, each a different size/position, with a hand-written handle sticker. 8 frames each.
+const W=1440,H=1080,FPS=24,g=document.getElementById('c').getContext('2d');let IM,ST=[];
+const WIN=[ // window rect (x,y,w,h), title, handle, sticker colour, rot of sticker, niche swaps
+ {r:[250,170,940,680],title:'TikTok hooks 🔥 DO NOT DELETE',h:'@mia.posts',c:'pink',sw:[['meal prep','busy moms'],['meal prep','students'],['high protein','gym bros'],['air fryer','dads']]},
+ {r:[110,250,1000,600],title:'caption prompts v7 FINAL (real)',h:'@growthwithjake',c:'yellow',sw:[['sneakers','collectors'],['sneakers','teens'],['running','beginners'],['streetwear','gen z']]},
+ {r:[390,120,900,760],title:'IG reels – copy paste this',h:'@thecontentden',c:'blue',sw:[['skincare','20s'],['skincare','men'],['SPF','surfers'],['retinol','beginners']]},
+ {r:[170,140,1080,720],title:'prompts (use these!!)',h:'@lena.socials',c:'green',sw:[['travel','couples'],['travel','solo women'],['Lisbon','foodies'],['packing','families']]},
+ {r:[300,230,860,640],title:'hashtag prompt – swap niche',h:'@dailyhooks.co',c:'yellow',sw:[['AI tools','founders'],['AI tools','teachers'],['ChatGPT','marketers'],['Notion','students']]},
+ {r:[200,110,1040,800],title:'MASTER PROMPTS ✅✅',h:'@nate.creates',c:'pink',sw:[['crypto','beginners'],['finance','gen z'],['budgeting','couples'],['side hustles','students']]}];
+const TPL=['Write 3 hooks for a TikTok about %0 for %1, casual voice.','Write a caption for a Reel about %0 for %1. Add 5 hashtags.','Give me 10 hashtags for %0 content aimed at %1.','Rewrite this hook about %0 so it stops %1 mid-scroll.'];
+function rr(q,x,y,w,h,r){q.beginPath();q.moveTo(x+r,y);q.arcTo(x+w,y,x+w,y+h,r);q.arcTo(x+w,y+h,x,y+h,r);q.arcTo(x,y+h,x,y,r);q.arcTo(x,y,x+w,y,r);q.closePath()}
+function sticker(blank,txt,h){const c=document.createElement('canvas'),q=c.getContext('2d');q.font=`${Math.round(h*.74)}px Hand`;const tw=q.measureText(txt).width;c.width=Math.round(tw+56);c.height=h;
+ q.drawImage(blank,0,0,c.width,h);q.font=`${Math.round(h*.74)}px Hand`;q.textBaseline='middle';q.fillStyle='#24262c';q.save();q.translate(28,h*.55);q.scale(1,1.15);q.fillText(txt,0,0);q.lineWidth=1.6;q.strokeStyle='#24262c';q.strokeText(txt,0,0);q.restore();return c}
+function win(q,o,i,t){const [x,y,w,h]=o.r,s=w/1000;q.save();
+ q.shadowColor='rgba(0,0,0,.6)';q.shadowBlur=40;rr(q,x,y,w,h,18*s);q.fillStyle='#fbfbfa';q.fill();q.shadowColor='transparent';q.save();rr(q,x,y,w,h,18*s);q.clip();
+ // title bar + sidebar
+ q.fillStyle='#ecebe8';q.fillRect(x,y,w,52*s);['#ff5f57','#febc2e','#28c840'].forEach((c,k)=>{q.fillStyle=c;q.beginPath();q.arc(x+(26+k*22)*s,y+26*s,7*s,0,7);q.fill()});
+ q.fillStyle='#f3f2ef';q.fillRect(x,y+52*s,230*s,h);q.fillStyle='#d8d6d0';q.fillRect(x+230*s,y+52*s,1.5,h);
+ q.font=`600 ${15*s}px -apple-system,Helvetica Neue`;q.fillStyle='#8a877f';q.fillText('Notes',x+22*s,y+86*s);
+ ['Quick Notes','Prompts','Captions','Ideas','Old prompts','Clients'].forEach((n,k)=>{if(k==1){q.fillStyle='#f6d36b';rr(q,x+12*s,y+(102+k*34)*s,206*s,30*s,7*s);q.fill()}q.fillStyle='#3a3833';q.font=`${16*s}px -apple-system,Helvetica Neue`;q.fillText('📁 '+n,x+22*s,y+(123+k*34)*s)});
+ // note body
+ const bx=x+262*s;let by=y+108*s;q.fillStyle='#1d1c1a';q.font=`700 ${30*s}px -apple-system,Helvetica Neue`;q.fillText(o.title,bx,by);by+=26*s;
+ q.font=`${13*s}px -apple-system,Helvetica Neue`;q.fillStyle='#9a978f';q.fillText('Edited just now · copy, paste, change the niche',bx,by+6*s);by+=44*s;
+ const R=HF.rng(i*11+3);
+ for(let k=0;k<11;k++){const sw=o.sw[k%o.sw.length],tp=TPL[(k+i)%TPL.length];const parts=tp.split(/(%0|%1)/);let cx=bx;q.font=`${19*s}px -apple-system,Helvetica Neue`;
+  q.fillStyle='#55534d';q.fillText('–',cx,by);cx+=18*s;
+  for(const p of parts){const word=p=='%0'?sw[0]:p=='%1'?sw[1]:p;const ww=q.measureText(word).width;
+   if(p=='%0'||p=='%1'){q.fillStyle='rgba(250,214,80,.65)';q.fillRect(cx-2*s,by-17*s,ww+4*s,23*s);
+    if(k>0&&R()<.35){q.fillStyle='#d23a2e';q.fillRect(cx,by-6*s,ww,2*s)}}
+   q.fillStyle='#2a2925';if(cx+ww<x+w-24*s)q.fillText(word,cx,by);cx+=ww}
+  by+=38*s;if(by>y+h-20*s)break;}
+ q.restore();q.restore();
+ // handle sticker on the window corner
+ const S=ST[i],J=HF.jitter(t,i+40,.8,.2),f=(t*FPS)%8;const sc=f<1?1.12:f<2?1.04:1;
+ X.draw(q,S,{cx:x+w-S.width*.35+J.dx,cy:y+h-10+J.dy,w:S.width*.75,rot:[-4,3,-2,5,-3,2][i],scale:sc,shadow:{op:.5,blur:12,dx:3,dy:7}});}
+window.render=t=>{const i=Math.min(5,Math.floor(t*FPS/8));g.setTransform(1,0,0,1,0,0);g.fillStyle='#000';g.fillRect(0,0,W,H);
+ const u=(t*FPS-i*8)/8,s=1+u*.02;g.setTransform(s,0,0,s,W/2*(1-s),H/2*(1-s));win(g,WIN[i],i,t)};
+window.ready=(async()=>{await document.fonts.load('80px Hand');
+ IM=await X.load({pink:'../../faseeh/edit/stk/blank-pink.png',yellow:'../../faseeh/edit/stk/blank-yellow.png',blue:'../../faseeh/edit/stk/blank-blue.png',green:'../../faseeh/edit/stk/blank-green.png'});
+ ST=WIN.map(o=>sticker(IM[o.c],o.h,96));return true})();
+</script></body></html>
