@@ -1,0 +1,65 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script>
+// HF-01 word-pop captions (style W) + HF-02 bottom subtitles (style S), one full-length alpha track, t = seconds of the reel (0..76.2).
+// Cues from ASSETS.md. Each W cue: [t_in, text, x_left, y_centre, size, t_clear, opts]
+const g=document.getElementById('c').getContext('2d');
+const FONT='"Helvetica Neue"';
+const W=[];const add=(t,txt,x,y,clear,size=64,o={})=>W.push({t,txt,x,y,clear,size,...o});
+// shots 1-3
+add(.10,'This',345,608,1.29);add(.30,'is',480,425,1.29);add(.70,'my',945,240,1.29);add(.90,'friend',1100,563,1.29);
+add(3.70,'HER',210,548,4.75,75);add(4.00,'JOB.',1190,548,4.75,75);
+add(4.80,'Ying',270,342,5.83);add(5.00,'are',375,482,5.83);add(5.30,'you',920,595,5.83);add(5.40,'free',1100,765,5.83);
+add(14.80,'Leo',270,567,16.00);add(15.10,'has',495,330,16.00);add(15.30,'an',1010,360,16.00);add(15.50,'almost',1050,670,16.00);
+add(16.00,'impossible',430,792,17.54,84);add(16.60,'task',1060,910,17.54);
+['the','list','goes','on…'].forEach((w,i)=>add(25.70+i*.13,w,1190,480+i*67.6,26.75,56));
+// SO -> SOOOOOOOOO grows one letter per ~0.1 s
+for(let i=0;i<7;i++){const s='so'+'o'.repeat([0,1,2,3,4,7,8][i]);add(26.80+i*.1,s,null,190,i<6?26.80+(i+1)*.1:27.50,40,{centre:720,grp:'so'})}
+add(27.90,'ONE',270,257,28.65,64);add(28.40,'TIME',1160,880,28.65,64);
+add(30.50,'hell',1190,418,31.25);add(30.80,'no.',1260,508,31.25);
+add(32.00,"she's",355,420,33.40);add(32.10,'not',700,300,33.40);add(32.40,'the',1035,532,33.40);add(32.60,'only',420,765,33.40,64,{italic:true});add(32.90,'one.',1010,770,33.40);
+add(35.30,'common',1100,193,36.0);add(35.60,'time',1100,255,36.0);add(35.90,'to',1020,322,36.0);add(36.00,'meet',297,414,37.54);add(36.20,'up',297,486,37.54);
+add(38.60,"let's",220,342,39.92);add(38.90,'just',285,445,39.92);add(39.10,'say…',383,571,39.92);
+add(39.90,"it doesn't really",60,428,41.79,52);add(40.50,'work out.',60,505,41.79,76);
+add(47.10,'for',1197,500,47.96);add(47.20,'good.',1197,560,47.96);
+add(50.10,'where',1170,522,51.46);add(50.40,'everyone',1150,580,51.46);add(50.80,'is,',1250,640,51.46);
+add(51.50,'what',500,180,53.08);add(52.00,'it is for them,',945,190,53.08);
+add(53.10,'what',290,887,54.75);add(53.30,"they're",545,887,54.75);add(54.40,'&',1228,887,54.75);
+add(54.80,'based',330,945,56.50);add(55.00,'on',470,945,56.50);add(55.30,'their',610,945,56.50);
+add(61.70,'maybe',1180,158,62.75);add(61.90,'next time…',1150,230,62.75);
+add(66.80,'ANYMORE.',null,922,67.67,88,{centre:720});
+// growing line: just -> just like -> just like Leo, -> just like Leo, OR
+[['just',68.80],['just like',69.10],['just like Leo,',69.40],['just like Leo, OR',69.90]].forEach(([s,t],i,a)=>add(t,s,200,810,i<3?a[i+1][1]:70.25,54,{grp:'just'}));
+add(70.30,'you',180,545,71.30);add(70.50,'just',1150,865,71.30);add(70.60,'need',608,783,71.30);add(70.70,'a',1206,693,71.30);add(70.90,'time',1110,230,71.30);add(71.00,'to',1143,440,71.30);
+add(71.40,'meet',880,738,72.42);add(71.40,'your',1000,775,72.42);add(71.50,'friends',1080,868,72.42,96);
+add(73.00,"and I'll send",1044,500,74.85);add(73.50,'you the link!',1044,560,74.85);
+// HF-02 subtitles
+const S=[[2.00,3.70,"And I'm trying to save"],[14.50,14.75,'See,'],[17.54,17.95,'She has to'],[17.95,19.17,'coordinate creators from'],
+[27.50,27.85,'finding'],[28.70,29.25,'that works'],[29.25,30.25,'for everyone?'],[33.30,33.85,'Everytime'],[33.85,34.55,'my friends and I'],
+[34.58,35.30,'try to find a'],[41.79,43.46,'So I knew'],[44.46,45.30,'So I decided'],[45.30,46.05,'to make something'],[46.05,47.10,'that will solve this problem'],
+[49.20,50.05,'An app that shows'],[56.50,57.96,'they can set their status to'],[62.75,63.25,'With Link Up'],[63.25,64.30,'as her partner,'],
+[64.30,65.05,"Leo doesn't have to"],[65.05,66.00,'convert timezones'],[66.00,66.75,'one by one,'],[67.67,68.45,'Soooo'],[68.45,68.75,"If you're"],[72.42,73.00,'Comment "LINK UP"']];
+function txt(s,x,y,size,o={}){g.font=`${o.italic?'italic ':''}700 ${size}px ${FONT}`;g.textBaseline='middle';
+  g.shadowColor='rgba(0,0,0,.35)';g.shadowBlur=4;g.shadowOffsetY=2;g.fillStyle='#fff';
+  if(o.centre!=null){g.textAlign='center';g.fillText(s,o.centre,y)}else{g.textAlign='left';g.fillText(s,x,y)}g.shadowColor='transparent'}
+window.render=t=>{g.clearRect(0,0,1440,1080);const P=window.PARAMS||{};
+  if(P.guide){}
+  for(const c of W){if(t>=c.t-1e-6&&t<c.clear-1e-6){g.font=`${c.italic?'italic ':''}700 ${c.fs}px ${FONT}`;g.textBaseline='alphabetic';g.textAlign='left';
+      g.shadowColor='rgba(0,0,0,.35)';g.shadowBlur=4;g.shadowOffsetY=2;g.fillStyle=P.debug&&c.fallback?'#f0f':'#fff';g.fillText(c.txt,c.bx,c.by);g.shadowColor='transparent'}}
+  for(const [a,b,s] of S) if(t>=a-1e-6&&t<b-1e-6) txt(s,0,1008,window.SUBSIZE||50,{centre:720});
+};
+window.ready=(async()=>{await document.fonts.load(`700 64px ${FONT}`);await document.fonts.load(`italic 700 64px ${FONT}`);
+ const M=await (await fetch('measured.json')).json();const OV=await (await fetch('overrides.json').catch(()=>null))?.json?.().catch(()=>({}))||{};
+ const fit=[];W.forEach((c,i)=>{g.font=`${c.italic?'italic ':''}700 100px ${FONT}`;const m=g.measureText(c.txt);
+   const L=m.actualBoundingBoxLeft,R=m.actualBoundingBoxRight,A=m.actualBoundingBoxAscent,D=m.actualBoundingBoxDescent;c.m={L,R,A,D};
+   const b=OV[i]||M[i];const dup=i>0&&M[i-1]&&b&&!OV[i]&&JSON.stringify(M[i-1])===JSON.stringify(b);
+   if(b&&!dup){const s=100*(b[2]-b[0])/(L+R);const hp=(A+D)*s/100,hm=b[3]-b[1];
+     if(OV[i]||(hm/hp>.75&&hm/hp<1.33)){c.fs=s;c.bx=b[0]+L*s/100;c.by=b[1]+A*s/100;fit.push(s/c.size)}}});
+ fit.sort((a,b)=>a-b);const k=fit.length?fit[fit.length>>1]:1.5;window.SCALE=k;
+ W.forEach(c=>{if(c.fs==null){c.fs=c.size*k;g.font=`${c.italic?'italic ':''}700 ${c.fs}px ${FONT}`;const w=g.measureText(c.txt).width;
+   c.bx=c.centre!=null?c.centre-w/2:c.x;c.by=c.y+c.m.A*c.fs/200;c.fallback=true}});
+ const G={};W.forEach(c=>{if(c.grp)(G[c.grp]=G[c.grp]||[]).push(c)});
+ for(const k2 in G){const L=G[k2][G[k2].length-1];G[k2].forEach(c=>{c.fs=L.fs;c.by=L.by;c.fallback=false;
+   if(c.centre!=null){g.font=`700 ${c.fs}px ${FONT}`;const wL=g.measureText(L.txt).width,cx=L.bx+wL/2;c.bx=cx-g.measureText(c.txt).width/2}else c.bx=L.bx})}
+ window.SUBSIZE=50;return true})();
+</script></body></html>

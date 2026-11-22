@@ -1,0 +1,73 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../_linkup/linkup.css">
+<style>
+#page { position:absolute; inset:0; background: radial-gradient(ellipse at 50% 45%, #F7F4EB 0%, #F1ECE0 70%, #EAE4D6 100%); }
+#hdr { position:absolute; left:0; right:0; top:44px; text-align:center; font-size:50px; letter-spacing:.14em; font-weight:400; color:#1F1E1C; }
+.lu-chip { height:36px; font-size:19.5px; transform:translateX(-50%); }
+#globe { position:absolute; left:0; top:0; }
+.lu-pcard { width:190px; padding:9px 11px 11px; font-size:14px; line-height:1.25; }
+.lu-pcard .n { display:flex; align-items:center; gap:6px; font-weight:600; font-size:15px; }
+.lu-pcard .n .lu-dot { width:8px; height:8px; }
+.lu-pcard .tm { color:#8A867C; font-size:11.5px; margin:2px 0 3px; }
+.lu-pcard .st { color:#4A4740; font-size:13px; white-space:nowrap; overflow:hidden; text-overflow:ellipsis; }
+.lu-pcard .ph { margin:7px auto 0; border-radius:8px; }
+#legend { position:absolute; left:0; right:0; top:1040px; display:flex; justify-content:center; gap:26px; font-size:15.5px; color:#6B675E; }
+#legend span { display:flex; align-items:center; gap:7px; } #legend .lu-dot { width:13px; height:13px; }
+#plane { position:absolute; width:150px; height:100px; margin:-50px 0 0 -75px; }
+#plane svg { width:100%; height:100%; }
+</style></head><body>
+<div id="stage" class="lu"><div id="page">
+  <div id="hdr" class="lu-hand">CREATOR CREW</div>
+  <div id="chips"></div>
+  <canvas id="globe" width="1440" height="1080"></canvas>
+  <div id="pins"></div><div id="cards"></div>
+  <div id="plane"></div>
+  <div class="lu-ctrl pink" id="loc" style="left:1023px;top:763px;width:45px;height:45px"><svg width="20" height="20" viewBox="0 0 20 20"><circle cx="10" cy="10" r="6.5" fill="none" stroke="#fff" stroke-width="1.8"/><circle cx="10" cy="10" r="2" fill="#fff"/></svg></div>
+  <div class="lu-ctrl" style="left:1023px;top:820px;width:45px;height:45px;font-size:22px">+</div>
+  <div class="lu-ctrl" style="left:1023px;top:877px;width:45px;height:45px;font-size:24px;line-height:1">−</div>
+  <div class="lu-ctrl" style="left:1023px;top:934px;width:45px;height:45px"><svg width="22" height="22" viewBox="0 0 22 22" fill="none" stroke="#55524A" stroke-width="1.6"><circle cx="11" cy="11" r="6"/><path d="M11 2v4M11 16v4M2 11h4M16 11h4"/></svg></div>
+  <div id="legend"><span><i class="lu-dot r"></i>leave me alone!</span><span><i class="lu-dot y"></i>maybe?</span><span><i class="lu-dot g"></i>always available</span></div>
+</div></div>
+<script src="../lib/kit.js"></script>
+<script src="../_linkup/vendor/d3.min.js"></script><script src="../_linkup/vendor/topojson-client.min.js"></script><script src="../_linkup/vendor/land-50m.js"></script>
+<script src="../_linkup/linkup.js"></script>
+<script>
+// HF-20: shot 40, ref 49.50-51.46 (t=0 at 49.50). Globe view "CREATOR CREW", LOCATION sticker at 50.10.
+const T0 = 49.50, P = LU.PEOPLE, $ = s => document.querySelector(s);
+const stage = $('#stage'), g = $('#globe').getContext('2d');
+// chip row (centre x of each chip measured on the reference, 1440 px)
+const CHIPS = [['ying', 266, 140], ['fin', 586, 140], ['izy', 868, 140], ['leo', 1180, 140], ['luke', 712, 192]];
+const chipEls = CHIPS.map(([k, x, y]) => { const d = document.createElement('div'); d.className = 'lu-chip'; d.style.left = x + 'px'; d.style.top = (y - 18) + 'px'; $('#chips').appendChild(d); return d; });
+// mini cards above pins, z-order izy < luke < leo
+const CARD = { izy: { ph: [LU.PH.izy], w: 78, h: 98, gray: true }, luke: { ph: [LU.PH.luke], w: 90, h: 112 }, leo: { ph: LU.PH.duo, w: 168, h: 93 } };
+const cardEls = {}, pinEls = {};
+for (const k of ['ying', 'fin', 'izy', 'luke', 'leo']) { const p = document.createElement('div'); p.className = 'lu-pin'; p.style.width = p.style.height = '22px'; p.style.background = `var(--lu-${{ r: 'red', y: 'yel', g: 'grn' }[P[k].c]})`; $('#pins').appendChild(p); pinEls[k] = p; }
+for (const k of ['izy', 'luke', 'leo']) {
+  const c = CARD[k], d = document.createElement('div'); d.className = 'lu-pcard';
+  const phs = c.ph.length > 1 ? `<div style="display:flex;height:100%">${c.ph.map(u => `<div class="lu-ph" style="flex:1;background-image:url('${u}')"></div>`).join('')}</div>` : '';
+  d.innerHTML = `<div class="n"><i class="lu-dot ${P[k].c}"></i>${P[k].name}</div><div class="tm"></div><div class="st">${P[k].status}</div>
+    <div class="ph lu-ph" style="width:${c.w}px;height:${c.h}px;${c.ph.length === 1 ? `background-image:url('${c.ph[0]}');` : ''}${c.gray ? 'filter:grayscale(1) contrast(1.1);' : ''}">${phs}</div>`;
+  $('#cards').appendChild(d); cardEls[k] = d;
+}
+$('#plane').innerHTML = LU.PLANE;
+const cur = LU.cursorEl(stage);
+const stk = LU.sticker(stage, 'location', [112, 513, 477, 623], 50.10 - T0, 41);
+// globe view centre (lon) measured from pin positions on the reference frames
+const LON = [[0, 4.5], [0.2, -6], [0.6, -29], [1.1, -54], [1.8, -90], [1.96, -98]], LAT = [[0, 10], [1.1, 12], [1.96, 15.5]];
+const PLANE_K = [[0, [264, 540, -24]], [0.2, [275, 525, -24]], [0.6, [333, 487, -24]], [1.1, [400, 435, -22]], [1.8, [507, 370, -20]], [1.96, [530, 356, -20]]].map(([t, v]) => [t, [v[0] * 1.5, v[1] * 1.5, v[2]]]);
+window.ready = (async () => { await LU.loadLand('50m'); await stk.ready; await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {}))); })();
+window.render = t => {
+  const abs = T0 + t, min = abs >= 51.10 ? 34 : 33;
+  CHIPS.forEach(([k], i) => { chipEls[i].innerHTML = `<i class="lu-dot ${P[k].c}"></i><b>${P[k].name}</b><span>${LU.timeFor(P[k], 13, min)} · ${P[k].city}</span>`; });
+  g.clearRect(0, 0, 1440, 1080);
+  const pj = LU.drawGlobe(g, { cx: 710, cy: 622, r: 352, lon0: LU.lerpKeys(LON, t), lat0: LU.lerpKeys(LAT, t) });
+  for (const k in pinEls) { const q = pj(P[k].lon, P[k].lat), e = pinEls[k]; e.style.display = q.vis > 0.02 ? '' : 'none'; e.style.left = q.x + 'px'; e.style.top = q.y + 'px';
+    const c = cardEls[k]; if (!c) continue; const a = HF.clamp((q.vis - 0.06) / 0.08); c.style.display = a > 0 ? '' : 'none'; c.style.opacity = a;
+    c.style.left = (q.x - 95) + 'px'; c.style.top = (q.y - 38 - c.offsetHeight) + 'px'; c.querySelector('.tm').textContent = `${LU.timeFor(P[k], 13, min)} · ${P[k].city}`; }
+  const pl = LU.lerpKeys(PLANE_K, t); $('#plane').style.left = pl[0] + 'px'; $('#plane').style.top = pl[1] + 'px'; $('#plane').style.transform = `rotate(${pl[2]}deg)`;
+  // cursor parked on the locate button; click at ~49.60
+  const press = t >= 0.08 && t < 0.2; $('#loc').style.transform = `translate(-50%,-50%) scale(${press ? 0.9 : 1})`; $('#loc').style.background = press ? '#D9608F' : '#E77AA6';
+  cur.set(1026, 766, 'arrow', 1);
+  stk.set(t);
+};
+</script></body></html>

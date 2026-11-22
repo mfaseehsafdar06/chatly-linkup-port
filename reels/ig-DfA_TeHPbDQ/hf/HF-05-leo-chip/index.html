@@ -1,0 +1,13 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0;background:transparent}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script>
+// HF-05 LEO name chip, shot 4. Ref frames 31..49 (1.29-2.08 s), 19 frames, ALPHA overlay for the L2 plate.
+// The reference chip boils between 3 poses on 4s (A B C A B). Poses measured from the reference (centre, size, rot).
+const POSES=[[970,810,388,220,-2.6],[981,811,374,223,-2.7],[981,814,371,218,-2.7]]; // cx,cy,w,h,rotDeg
+const SEQ=[0,0,0,0,1,1,1,1,2,2,2,2,0,0,0,0,1,1,1];
+const g=document.getElementById('c').getContext('2d');let IM;
+window.ready=(async()=>{IM=await X.load({LEO:'../../assets/cut/GPT-05_00.png'});})();
+window.render=t=>{const j=Math.round(t*24);g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,1440,1080);
+ const p=POSES[SEQ[Math.min(j,SEQ.length-1)]];const sc=j===0?1.04:1;
+ X.draw(g,IM.LEO,{cx:p[0],cy:p[1],w:p[2],h:p[3],rot:p[4],scale:sc,filter:'brightness(1.04) saturate(.88) hue-rotate(6deg)',shadow:{op:.1,blur:5,dy:2}});};
+</script></body></html>

@@ -1,0 +1,94 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../_linkup/linkup.css">
+<style>
+#cam { position:absolute; inset:0; transform-origin: 720px 300px; }
+#page { position:absolute; left:-200px; top:-100px; width:1840px; height:1400px; background: radial-gradient(ellipse at 50% 40%, #F7F4EB 0%, #F1ECE0 70%, #EAE4D6 100%); }
+#hdr { position:absolute; left:200px; width:1490px; top:136px; text-align:center; font-size:64px; letter-spacing:.14em; color:#1F1E1C; }
+.lu-chip { height:48px; font-size:25px; }
+#globe { position:absolute; left:200px; top:100px; }
+.st-card { position:absolute; width:558px; padding:22px 25px 25px; box-sizing:border-box; background:#FBF9F3; border-radius:27px;
+  box-shadow:0 10px 30px rgba(60,50,30,.18), 0 0 0 1px rgba(0,0,0,.03); transform-origin:50% 100%; z-index:5; }
+.st-card .row { display:flex; align-items:center; gap:12px; font-size:28.5px; font-weight:500; }
+.st-card .row .lu-dot { width:15px; height:15px; }
+.st-card .row .tm { margin-left:auto; font-size:20px; color:#7E7A70; font-weight:400; }
+.st-card .st { font-size:24px; color:#5A564D; margin-top:10px; }
+.st-card .ph { margin:20px auto 0; border-radius:26px; overflow:hidden; }
+.refresh { position:absolute; width:54px; height:54px; border-radius:50%; border:2px solid #B9B5AA; background:rgba(255,255,255,.6); display:flex; align-items:center; justify-content:center; }
+</style></head><body>
+<div id="stage" class="lu"><div id="cam"><div id="page">
+  <div id="hdr" class="lu-hand">CREATOR CREW</div>
+  <div id="chips"></div>
+  <canvas id="globe" width="1440" height="1080"></canvas>
+  <div id="pins"></div><div id="card"></div>
+  <div class="refresh" style="left:1358px;top:1133px"><svg width="26" height="26" viewBox="0 0 24 24" fill="none" stroke="#55524A" stroke-width="1.8" stroke-linecap="round"><path d="M20 11a8 8 0 0 0-14.6-4.5M4 4v3h3M4 13a8 8 0 0 0 14.6 4.5M20 20v-3h-3"/></svg></div>
+</div></div></div>
+<script src="../lib/kit.js"></script>
+<script src="../_linkup/vendor/d3.min.js"></script><script src="../_linkup/vendor/topojson-client.min.js"></script><script src="../_linkup/vendor/land-50m.js"></script>
+<script src="../_linkup/linkup.js"></script>
+<script>
+// HF-22: shot 42, ref 53.08-56.50 (t=0 at 53.08). Hover pins -> status cards. Stickers WORKING ON 53.40, PRIORITIES 55.40.
+const T0 = 53.08, P = LU.PEOPLE, $ = s => document.querySelector(s), OX = 200, OY = 100; // page offset inside #page
+const stage = $('#stage'), g = $('#globe').getContext('2d');
+const GC = { cx: 737, cy: 855, r: 500 };
+// pin screen targets (ref 960 px x1.5) and card photo frames (w,h at 1440)
+const SEQ = [
+  { k: 'leo', t: 53.60, pin: [726, 771], ph: { w: 513, h: 285, duo: true }, tm: '7:31 AM' },
+  { k: 'izy', t: 54.20, pin: [745, 900], ph: { w: 455, h: 555, gray: true }, tm: '11:31 PM' },
+  { k: 'luke', t: 54.75, pin: [717, 922], ph: { w: 488, h: 627 }, tm: '1:31 AM' },
+  { k: 'ying', t: 55.40, pin: [748, 800], ph: { w: 510, h: 395 }, tm: '1:32 PM' },
+  { k: 'fin', t: 56.00, pin: [717, 889], ph: { w: 482, h: 654 }, tm: '3:32 PM' },
+];
+// solve view (lon0,lat0) so the person's pin projects to the target
+function solveView(p, [tx, ty]) {
+  let lon0 = p.lon, lat0 = p.lat - 20;
+  for (let i = 0; i < 60; i++) {
+    const f = (lo, la) => { const rad = Math.PI / 180, φ = p.lat * rad, Δ = (p.lon - lo) * rad, s0 = Math.sin(la * rad), c0 = Math.cos(la * rad);
+      return [GC.cx + GC.r * Math.cos(φ) * Math.sin(Δ), GC.cy - GC.r * (c0 * Math.sin(φ) - s0 * Math.cos(φ) * Math.cos(Δ))]; };
+    const [x, y] = f(lon0, lat0), [x1] = f(lon0 + .01, lat0), [, y2] = f(lon0, lat0 + .01);
+    lon0 -= (x - tx) / ((x1 - x) / .01); lat0 -= (y - ty) / ((y2 - y) / .01);
+  }
+  return [lon0, lat0];
+}
+SEQ.forEach(s => s.view = solveView(P[s.k], s.pin));
+// chips: [key, left or -right edge, top-centre y]
+const CHIPS = [['ying', -362, 162], ['fin', 387, 162], ['izy', 768, 162], ['leo', 1185, 162], ['luke', 'c742', 240]];
+const chipEls = CHIPS.map(() => { const d = document.createElement('div'); d.className = 'lu-chip'; $('#chips').appendChild(d); return d; });
+const pinEls = {};
+for (const k in P) { const p = document.createElement('div'); p.className = 'lu-pin'; p.style.width = p.style.height = '36px'; p.style.borderWidth = '3px'; p.style.background = `var(--lu-${{ r: 'red', y: 'yel', g: 'grn' }[P[k].c]})`; $('#pins').appendChild(p); pinEls[k] = p; }
+const cardEls = SEQ.map(s => { const p = P[s.k], d = document.createElement('div'); d.className = 'st-card';
+  const im = s.ph.duo ? `<div style="display:flex;height:100%">${LU.PH.duo.map(u => `<div class="lu-ph" style="flex:1;background-image:url('${u}')"></div>`).join('')}</div>` : '';
+  d.innerHTML = `<div class="row"><i class="lu-dot ${p.c}"></i>${p.name}<span class="tm">${s.tm} · ${p.city}</span></div><div class="st">${p.status}</div>
+    <div class="ph lu-ph" style="width:${s.ph.w}px;height:${s.ph.h}px;${s.ph.duo ? '' : `background-image:url('${LU.PH[s.k]}');`}${s.ph.gray ? 'filter:grayscale(1) contrast(1.15);' : ''}">${im}</div>`;
+  d.style.display = 'none'; $('#card').appendChild(d); return d; });
+const cur = LU.cursorEl(stage);
+const stW = LU.sticker(stage, 'working', [695, 843, 1178, 954], 53.40 - T0, 53, 54.75 - T0);
+const stP = LU.sticker(stage, 'priorities', [825, 888, 1155, 1013], 55.40 - T0, 55);
+// camera: pan left during Ying, push-in on Fin
+const CAM = [[0, [0, 0, 1]], [2.22, [0, 0, 1]], [2.30, [-55, 0, 1]], [2.84, [-55, 0, 1]], [2.92, [-20, 30, 1.12]], [3.42, [-24, 32, 1.13]]];
+window.ready = (async () => { await LU.loadLand('50m'); await stW.ready; await stP.ready; await document.fonts.ready; await Promise.all([...document.images].map(i => i.decode().catch(() => {}))); })();
+const ang = (a, b, u) => { let d = ((b - a + 540) % 360) - 180; return a + d * u; };
+window.render = t => {
+  const abs = T0 + t, min = abs >= 55.40 ? 32 : 31;
+  CHIPS.forEach(([k, x, y], i) => { const e = chipEls[i]; e.innerHTML = `<i class="lu-dot ${P[k].c}"></i><b>${P[k].name}</b><span>${LU.timeFor(P[k], 13, min)} · ${P[k].city}</span>`;
+    e.style.top = (OY + y - 24) + 'px'; if (typeof x === 'string') { e.style.left = (OX + +x.slice(1)) + 'px'; e.style.transform = 'translateX(-50%)'; } else if (x < 0) { e.style.left = (OX - x - e.offsetWidth) + 'px'; } else e.style.left = (OX + x) + 'px'; });
+  // which card is active; view rotates over the 2 frames before each pop
+  let i = -1; for (let j = 0; j < SEQ.length; j++) if (abs >= SEQ[j].t - 1e-6) i = j;
+  let view = SEQ[Math.max(i, 0)].view; const n = SEQ[i + 1];
+  if (n && abs > n.t - 2 / 24) { const u = LU.smooth((abs - (n.t - 2 / 24)) / (2 / 24)); view = [ang(view[0], n.view[0], u), view[1] + (n.view[1] - view[1]) * u]; }
+  g.clearRect(0, 0, 1440, 1080);
+  const pj = LU.drawGlobe(g, { ...GC, lon0: view[0], lat0: view[1] });
+  for (const k in pinEls) { const q = pj(P[k].lon, P[k].lat), e = pinEls[k]; e.style.display = q.vis > 0.03 ? '' : 'none'; e.style.left = (OX + q.x) + 'px'; e.style.top = (OY + q.y) + 'px'; }
+  cardEls.forEach((c, j) => { if (j !== i) { c.style.display = 'none'; return; }
+    const s = SEQ[j], f = (abs - s.t) * 24, a = HF.clamp(f / 2.5), sc = 0.94 + 0.06 * HF.easeOut(HF.clamp(f / 3));
+    c.style.display = ''; c.style.opacity = a; c.style.left = (OX + s.pin[0] - 279) + 'px'; c.style.top = (OY + s.pin[1] - 38 - c.offsetHeight) + 'px'; c.style.transform = `scale(${sc})`; });
+  const cam = LU.lerpKeys(CAM, t, LU.smooth), dr = [Math.sin(t * 1.3) * 4, Math.cos(t * 1.1) * 3];
+  $('#cam').style.transform = `translate(${cam[0] + dr[0]}px,${cam[1] + dr[1]}px) scale(${cam[2]})`;
+  // cursor: arrow drifting onto the Zurich pin, then hand on each hovered pin (screen coords follow the camera)
+  const scr = (x, y) => [720 + (x - 720) * cam[2] + cam[0] + dr[0], 300 + (y - 300) * cam[2] + cam[1] + dr[1]];
+  let cx, cy, kind = 'hand';
+  if (i < 0) { [cx, cy] = LU.lerpKeys([[0, [722, 787]], [0.32, [724, 796]], [0.5, [729, 798]]], t); kind = 'arrow'; }
+  else { const s = SEQ[i]; [cx, cy] = [s.pin[0] + 4, s.pin[1] + 24]; const nx = SEQ[i + 1]; if (nx && abs > nx.t - 2 / 24) { const u = (abs - (nx.t - 2 / 24)) * 12; cx += (nx.pin[0] + 4 - cx) * u; cy += (nx.pin[1] + 24 - cy) * u; } }
+  const [sx, sy] = scr(cx, cy); cur.set(sx, sy, kind, cam[2]);
+  stW.set(t); stP.set(t);
+};
+</script></body></html>

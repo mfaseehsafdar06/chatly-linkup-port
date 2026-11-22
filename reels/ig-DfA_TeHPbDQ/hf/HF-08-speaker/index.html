@@ -1,0 +1,28 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="../HF-07-meet/common.js"></script><script src="../HF-07-meet/meet.js"></script>
+</head><body><div id="stage"></div>
+<script>
+// HF-08 · Meet speaker view on black (shot 8, ref 4.750–5.833, f114–f140, 26 frames). Alpha overlay:
+// black surround + Meet window are opaque; Leo's tile and Ying's PIP are transparent holes (see layout.json).
+// No word-pop captions here (HF-01 owns "Ying / are / you / free").
+CM.initGuide();
+const S = 1.17, OX = 82, OY = 195;               // page placement in output px (measured)
+const W = 1276 / S, H = 713 / S;
+const stage = document.getElementById('stage');
+function build() {
+  const pg = MEET.page({
+    W, H,
+    tile: { x: 13.7, y: 9.4, w: 1064.1, h: 535.9, r: 15 },
+    pip: { x: 900.9, y: 441, w: 167.5, h: 94, r: 8, label: 'Ying', labelSize: 9, lx: 8, ly: 5 },
+    name: { text: 'Leo', x: 25, y: 532, size: 11 },
+    speak: { x: 1060.7, y: 25.6, d: 17 },
+    bar: { cx: 544, cy: 578.6, emojiActive: false },
+    right: [{ icon: 'chat', x: W - 62, y: 578.6, size: 18 }, { icon: 'apps', x: W - 27, y: 578.6, size: 18 }],
+  });
+  stage.innerHTML = `<div class="abs" style="left:${OX}px;top:${OY}px;width:${W * S}px;height:${H * S}px;box-shadow:0 0 0 3000px #000;border-radius:3px"></div>
+   <div class="abs" style="left:${OX}px;top:${OY}px;width:${W}px;height:${H}px;transform:scale(${S});transform-origin:0 0">${pg}</div>`;
+  stage.style.opacity = CM.guideOpacity();
+}
+window.ready = (async () => { await CM.fonts(); build(); })();
+window.render = async t => { await CM.guideAt(t); };
+</script></body></html>

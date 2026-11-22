@@ -1,0 +1,45 @@
+<!doctype html><html><head><meta charset="utf-8">
+<script src="../HF-07-meet/common.js"></script><script src="../HF-07-meet/meet.js"></script>
+<style>
+  .dlg{position:absolute;left:447px;top:372px;width:543px;height:333px;box-sizing:border-box;background:#0a3ed6;border-radius:9px 9px 2px 2px;
+       box-shadow:1px 2px 3px rgba(0,0,0,.25)}
+  .tb{position:absolute;left:0;top:0;right:0;height:81px;border-radius:9px 9px 0 0;
+      background:linear-gradient(180deg,#3d8bff 0%,#0f62f0 9%,#0758e6 30%,#0453df 60%,#0a5ae8 88%,#0539c4 100%)}
+  .tt{position:absolute;left:23px;top:40px;transform:translateY(-50%);font:bold 46px 'Trebuchet MS',Tahoma,sans-serif;color:#fff;
+      text-shadow:2px 2px 0 #0a1f7a;letter-spacing:.5px}
+  .x{position:absolute;left:474px;top:15px;width:57px;height:56px;box-sizing:border-box;border-radius:6px;background:rgba(128,128,128,.85);
+     border:2px solid rgba(255,255,255,.55)}
+  .x svg{position:absolute;left:50%;top:50%;transform:translate(-50%,-50%)}
+  .body{position:absolute;left:6px;top:81px;right:6px;bottom:6px;background:#ece9d8}
+  .ic{position:absolute;left:46px;top:-6px}
+  .msg{position:absolute;left:157px;top:30px;font:30.5px Tahoma,Verdana,sans-serif;color:#000;letter-spacing:-.2px}
+  .ok{position:absolute;left:92px;top:144px;width:168px;height:63px;box-sizing:border-box;border:3px solid #111;border-radius:3px;background:#f2f1ea;
+      box-shadow:inset -2px -2px 0 #c9c6b8, inset 2px 2px 0 #fff;font:31px Tahoma,Verdana,sans-serif;display:flex;align-items:center;justify-content:center;color:#000}
+</style>
+</head><body><div id="stage"></div>
+<script>
+// HF-11 · "Hard drive error" dialog (shot 12, ref 13.750–14.750, f330–f354, 24 frames). Alpha overlay over Leo's L3 plate.
+// Pops at 14.083 (f338 = asset frame 8), hard on, ±1 px jitter on 2s. Also draws Ying's PIP ring + label (bottom right,
+// zoomed Meet, runs off the right edge). PIP interior is a hole (see layout.json). No subtitle ("See," is HF-02).
+CM.initGuide();
+const stage = document.getElementById('stage');
+const icon = `<svg class="ic" width="100" height="100" viewBox="0 0 100 100" style="left:32px;top:15px">
+  <defs><radialGradient id="rg" cx="40%" cy="35%" r="70%"><stop offset="0" stop-color="#ff4a3d"/><stop offset=".6" stop-color="#e3170d"/><stop offset="1" stop-color="#b30b05"/></radialGradient></defs>
+  <circle cx="53" cy="53" r="42" fill="rgba(0,0,0,.35)"/>
+  <circle cx="49" cy="49" r="42" fill="url(#rg)" stroke="#8c0a05" stroke-width="2"/>
+  <path d="M34 34 L64 64 M64 34 L34 64" stroke="#fff" stroke-width="10" stroke-linecap="square"/></svg>`;
+const dlg = `<div class="dlg" id="dlg"><div class="tb"><div class="tt">Error</div>
+   <div class="x"><svg width="34" height="34" viewBox="0 0 34 34"><path d="M7 7 L27 27 M27 7 L7 27" stroke="rgba(235,235,235,.9)" stroke-width="4"/></svg></div></div>
+   <div class="body">${icon}<div class="msg">Hard drive error</div><div class="ok">OK</div></div></div>`;
+// PIP (zoomed Meet, scale ~2.0)
+const pip = `<div class="abs" style="left:1137px;top:868px;width:345px;height:190px;box-sizing:border-box;border:3px solid rgba(178,198,240,.95);border-radius:13px"></div>
+  <div class="mt-lbl" style="left:1149px;top:1049px;transform:translateY(-100%);font-size:17px">Ying</div>`;
+window.ready = (async () => { await CM.fonts(); MEET.injectCSS(); stage.innerHTML = pip + dlg; stage.style.opacity = CM.guideOpacity(); })();
+window.render = async t => {
+  await CM.guideAt(t);
+  const k = Math.round(t * 24), d = document.getElementById('dlg');
+  d.style.display = k >= 8 ? 'block' : 'none';
+  const R = CM.rng(1000 + Math.floor(k / 2)); R();
+  d.style.transform = `translate(${Math.round((R() - .5) * 2)}px,${Math.round((R() - .5) * 2)}px)`;
+};
+</script></body></html>

@@ -1,0 +1,5 @@
+{"asset":"HF-08","ref":"shot 8, 4.750-5.833 (f114-f140)","frames":26,"output":"out/HF-08-speaker.mov (ProRes 4444 alpha)",
+ "holes_px_1440x1080":{
+  "leo_tile":{"x":98,"y":206,"w":1245,"h":627,"r":18,"plate":"L3 Leo webcam, scale to cover"},
+  "ying_pip":{"x":1136,"y":711,"w":196,"h":110,"r":9,"plate":"Ying PIP webcam loop (from Y1), cover-fit, mask to this rounded rect; PIP sits ABOVE the Leo plate"}},
+ "notes":"Comp order: Leo plate -> Ying PIP (masked) -> this overlay. Captions (Ying/are/you/free) come from HF-01."}
