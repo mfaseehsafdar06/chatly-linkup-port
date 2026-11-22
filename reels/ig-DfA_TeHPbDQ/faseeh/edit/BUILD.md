@@ -103,3 +103,12 @@
 - 24 pre-made fields, a new one every frame: σ 0.75 px luma clumps + 15% chroma.
 - Strength `GRAIN_AMT=7.5`, weighted toward the mids.
 - Applied before stickers and captions, so the text stays clean. Not applied on the official outro.
+
+## v5 (2026-11-23)
+**Output:** `out/this-is-faseeh-chatly-v5-4x3.mp4`
+
+- **Hook:** the owner's jump up from behind the hedge (rough cut 4.0–4.97) is back on "save HIS JOB". The FAIL report card is removed.
+- **23.667–25.2:** `hf/P-33-account-cards`, after ref 27.5–30.25 (name cards slapped onto the "MEETING TIME?" crayon-globe poster).
+  - The owner's photos (Downloads 2026-11-23, in `faseeh/footage/images-1123`, not in git) become small feeder-account cards: photo + handle + time zone.
+  - They slap onto a "FEEDER ACCOUNTS" crayon globe: a close-up pan over 2 cards, a 3-frame whip zoom-out, then 4 more cards 2 frames apart.
+  - The rendered P-33 output is also kept out of git, because it contains the personal photos.

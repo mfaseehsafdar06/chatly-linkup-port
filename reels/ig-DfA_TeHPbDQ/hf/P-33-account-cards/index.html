@@ -1,0 +1,55 @@
+<!doctype html><html><head><meta charset="utf-8"><style>
+@font-face{font-family:Hand;src:url(../../faseeh/edit/fonts/CoveredByYourGrace.ttf)}
+html,body{margin:0;background:#000}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas>
+<script src="../lib/kit.js"></script><script src="../_props/x.js"></script><script>
+// P-33 "Every one has its own niche… its own time zone"  FULL-FRAME 1.533 s (VO 23.667-25.2).
+// After ref 27.5-30.25 (IZY / MULLET / FIN name cards slapped onto the 'MEETING TIME?' crayon-globe poster):
+// the owner's photos as small feeder-account cards (photo + handle + time zone) slap onto a 'FEEDER ACCOUNTS' globe poster.
+// close-up pan over the first two cards -> 3-frame whip zoom-out -> the other four pile on 2 frames apart.
+const W=1440,H=1080,FPS=24,g=document.getElementById('c').getContext('2d');let IM,POSTER,CARDS=[];
+const PH='../../faseeh/footage/images-1123/',ST='../../faseeh/edit/stk/';
+const C=[ // photo, handle, tz, colour, centre on poster, rot, slap frame, entry dir
+ ['img02_15.07.42.jpeg','@pawsdaily','PST (UTC-8)','pink',[330,330],-5,0,[-1,-.3]],
+ ['img04_15.07.44.jpeg','@offroad.trails','MST (UTC-7)','yellow',[560,560],4,7,[1,-.4]],
+ ['img05_15.07.45_(1).jpeg','@nightsout.live','EST (UTC-5)','blue',[1110,300],3,18,[1,0]],
+ ['img09_15.32.36.jpeg','@goldenhour.co','GMT (UTC+0)','green',[1130,640],-4,20,[1,.4]],
+ ['img10_20.24.59.jpeg','@carspotting','CET (UTC+1)','yellow',[310,760],5,22,[-1,.3]],
+ ['img01_15.04.46.jpeg','@ridersclub','AEST (UTC+10)','pink',[820,850],-3,24,[0,1]]];
+function card(photo,handle,tz,blank){const w=430,h=190,c=document.createElement('canvas');c.width=w+16;c.height=h+16;const q=c.getContext('2d');
+ q.translate(8,8);q.fillStyle='#16161a';q.fillRect(-6,-6,w+12,h+12);q.drawImage(blank,0,0,w,h);
+ // photo, square crop, black keyline
+ const s=h-34,sx=Math.max(0,(photo.width-photo.height)/2),sy=Math.max(0,(photo.height-photo.width)/2*.8),sz=Math.min(photo.width,photo.height);
+ q.fillStyle='#16161a';q.fillRect(14,14,s+6,s+6);q.drawImage(photo,sx,sy,sz,sz,17,17,s,s);
+ q.fillStyle='#24262c';q.textBaseline='middle';
+ const fit=(t,max,size)=>{q.font=`${size}px Hand`;while(q.measureText(t).width>max&&size>20){size-=2;q.font=`${size}px Hand`}return size};
+ q.save();fit(handle,w-s-80,58);q.translate(s+36,h*.33);q.scale(1,1.15);q.fillText(handle,0,0);q.lineWidth=1.6;q.strokeStyle='#24262c';q.strokeText(handle,0,0);q.restore();
+ q.save();fit(tz,w-s-80,54);q.translate(s+36,h*.72);q.scale(1,1.15);q.fillText(tz,0,0);q.lineWidth=1.4;q.strokeStyle='#24262c';q.strokeText(tz,0,0);q.restore();
+ return c}
+const lerp=(a,b,t)=>a+(b-a)*t,cl=(v,a=0,b=1)=>Math.max(a,Math.min(b,v)),ease=u=>u*u*(3-2*u);
+function camAt(f){ // poster-space centre + scale
+ const A={cx:C[0][4][0]+60,cy:C[0][4][1]+40,s:2.25},B={cx:C[1][4][0]+40,cy:C[1][4][1]+10,s:2.25},Wd={cx:720,cy:560,s:1};
+ if(f<15){const u=ease(cl((f-5)/9));return{cx:lerp(A.cx,B.cx,u),cy:lerp(A.cy,B.cy,u),s:2.25}}
+ if(f<18){const u=ease((f-15)/3);return{cx:lerp(B.cx,Wd.cx,u),cy:lerp(B.cy,Wd.cy,u),s:Math.exp(lerp(Math.log(2.25),0,u))}}
+ return{cx:Wd.cx,cy:Wd.cy,s:1+(f-18)/FPS*.012}}
+function scene(q,f,t){const c=camAt(f);const dr=[Math.sin(t*2.1)*3,Math.cos(t*1.7)*2.5];
+ q.setTransform(c.s,0,0,c.s,W/2-c.cx*c.s+dr[0],H/2-c.cy*c.s+dr[1]);q.drawImage(POSTER,0,0);
+ C.forEach((k,i)=>{const d=f-k[6];if(d<-2)return;const J=HF.jitter(t,i+50,1,.3);let sc=1,ox=0,oy=0,al=1;
+  if(d<0){const u=(d+2)/2;ox=k[7][0]*(1-u)*700;oy=k[7][1]*(1-u)*700;sc=1.25}else if(d<1)sc=1.1;else if(d<2)sc=1.03;
+  X.draw(q,CARDS[i],{cx:k[4][0]+ox+J.dx,cy:k[4][1]+oy+J.dy,w:CARDS[i].width*(i<2?.78:.9),rot:k[5]+J.rot*57.3,scale:sc,shadow:{op:.38,blur:12,dx:3,dy:8}})});}
+const A2=document.createElement('canvas');A2.width=W;A2.height=H;const AX=A2.getContext('2d');
+window.render=t=>{const f=Math.round(t*FPS);g.setTransform(1,0,0,1,0,0);g.clearRect(0,0,W,H);
+ const whip=f>=15&&f<18,n=whip?10:1;
+ for(let i=0;i<n;i++){const ff=whip?f-.5+i/n:f;AX.setTransform(1,0,0,1,0,0);AX.fillStyle='#f4f3ee';AX.fillRect(0,0,W,H);scene(AX,ff,t);g.globalAlpha=1/(i+1);g.setTransform(1,0,0,1,0,0);g.drawImage(A2,0,0)}
+ g.globalAlpha=1};
+window.ready=(async()=>{await document.fonts.load('80px Hand');
+ const m={globe:'../../seg1923/gen/globe.png'};C.forEach((k,i)=>{m['p'+i]=PH+k[0];m['b'+i]=ST+'blank-'+k[3]+'.png'});IM=await X.load(m);
+ CARDS=C.map((k,i)=>card(IM['p'+i],k[1],k[2],IM['b'+i]));
+ POSTER=document.createElement('canvas');POSTER.width=W;POSTER.height=H;const q=POSTER.getContext('2d');X.scanPaper(q,44,[244,243,238],50);
+ const gc=document.createElement('canvas');gc.width=1080;gc.height=Math.round(1080*1792/2400);const gq=gc.getContext('2d');gq.drawImage(IM.globe,0,0,gc.width,gc.height);
+ const id=gq.getImageData(0,0,gc.width,gc.height),d=id.data;const bg=[0,1,2].map(k=>{const v=[];for(let i=0;i<4000;i++)v.push(d[(i*37%(gc.width*20))*4+k]);v.sort((a,b)=>a-b);return v[2000]});
+ for(let i=0;i<d.length;i+=4){const mx=Math.max(d[i],d[i+1],d[i+2]),mn=Math.min(d[i],d[i+1],d[i+2]);d[i+3]=Math.max(0,Math.min(255,(mx-mn-16)*9))}gq.putImageData(id,0,0);
+ q.drawImage(gc,180,150);
+ q.save();q.translate(720,110);q.rotate(-.03);q.font='120px Hand';q.textAlign='center';q.textBaseline='middle';q.fillStyle='#1d1d22';q.scale(1,1.2);q.fillText('FEEDER ACCOUNTS',0,0);q.lineWidth=3;q.strokeStyle='#1d1d22';q.strokeText('FEEDER ACCOUNTS',0,0);q.restore();
+ return true})();
+</script></body></html>

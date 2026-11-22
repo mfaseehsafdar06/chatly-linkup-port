@@ -4,7 +4,7 @@ set -e
 SRC="$(cd "$(dirname "$0")" && pwd)"; REPO=/Users/faseeh/Developer/chatly-linkup-port
 rsync -a --delete --max-size=95m --exclude 'frames_*' --exclude 'ref24' --exclude 'f10' --exclude 'ref.mp4' --exclude '*.wav' \
   --exclude 'src/hi-1.png' --exclude 'src/crop.png' --exclude 'src/prev-1.png' --exclude '*.npy' --exclude '.DS_Store' \
-  --exclude 'tmp/' --exclude 'node_modules/' --exclude 'faseeh/footage/' "$SRC/" "$REPO/reels/ig-DfA_TeHPbDQ/"
+  --exclude 'tmp/' --exclude 'node_modules/' --exclude 'faseeh/footage/' --exclude 'hf/P-33-account-cards/out/' --exclude 'hf/P-33-account-cards/tmp/' "$SRC/" "$REPO/reels/ig-DfA_TeHPbDQ/"
 find "$SRC" -type f -size +95M -not -path "*/frames_*" -not -path "*/tmp/*" -not -name ref.mp4 | sed "s|$SRC/||" > "$REPO/reels/ig-DfA_TeHPbDQ/BIG-FILES-NOT-IN-GIT.txt"
 cd "$REPO"; git add -A
 if git diff --cached --quiet; then echo "nothing to push"; exit 0; fi

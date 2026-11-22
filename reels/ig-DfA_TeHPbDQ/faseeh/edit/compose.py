@@ -41,7 +41,7 @@ G = {k: clip(v) for k, v in {
     'card': f'{HF}/P-29-prompt-cards/out/P-29a-blank-card-slide.mp4', 'lib': f'{HF}/P-01-library-save/out/P-01-library-save.mp4',
     'at': f'{HF}/P-02-at-mention/out/P-02-at-mention.mp4', 'fill': f'{HF}/P-03-fill-blanks/out/P-03-fill-blanks.mp4',
     'share': f'{HF}/P-04-share-team/out/P-04-share-team.mp4', 'scroll': f'{HF}/P-28-scroll-ticks/out/P-28-scroll-ticks.mp4',
-    'outro': f'{HF}/P-05-endcard/out/outro-4x3.mp4'}.items()}
+    'outro': f'{HF}/P-05-endcard/out/outro-4x3.mp4', 'cards': f'{HF}/P-33-account-cards/out/P-33-account-cards.mp4'}.items()}
 OV = {n: PNGs(f'{D}/tmp/ov/{n}') for n in os.listdir(f'{D}/tmp/ov')}
 HOLE = {k: {e['frame']: np.float32(e['quad']) for e in json.load(open(f'{HF}/{k}/out/{k}-hole.json'))} for k in ('P-22-reportcard-fail', 'P-23-reportcard-pass')}
 
@@ -202,7 +202,7 @@ W_ = []
 def w(t, t_out, txt, x, y, size=72, italic=False, centre=False, dark=False): W_.append((t, t_out, txt, x, y, size, italic, centre, dark))
 w(0.00, 1.633, 'This', 470, 120); w(0.32, 1.633, 'is', 670, 210); w(0.46, 1.633, 'my', 790, 120); w(0.64, 1.633, 'co-worker', 900, 230)
 w(1.74, 3.133, 'We', 140, 150); w(2.00, 3.133, 'both', 300, 260); w(2.30, 3.133, 'work', 1010, 140); w(2.56, 3.133, 'at', 1080, 250); w(2.70, 3.133, 'Chatly', 1040, 360, 92)
-w(4.22, 4.967, 'HIS', 170, 548, 84); w(4.36, 4.967, 'JOB.', 1150, 548, 84)
+w(4.14, 4.967, 'HIS', 120, 330, 96); w(4.30, 4.967, 'JOB.', 1080, 330, 96)
 w(5.66, 7.10, 'Faseeh,', 860, 150, 80)
 w(7.22, 8.233, 'Is', 1040, 230); w(7.36, 8.233, 'it', 1135, 330); w(7.48, 8.233, '9am?', 1040, 440, 96)
 w(10.24, 12.0, 'What', 160, 300, 90); w(10.72, 12.0, 'the', 230, 410, 90)
@@ -222,7 +222,7 @@ w(69.46, 72.1, "and I'll send", 880, 760, 64); w(70.02, 72.1, 'you the exact one
 # S: subtitles (t_in, t_out, text, ui-style)
 S_ = [(3.10, 3.90, "and I'm trying to save", 0), (11.90, 13.88, 'Every morning, Faseeh has to post.', 1), (14.02, 15.16, 'Except morning means', 1),
       (15.16, 17.14, 'New York, London and San Francisco', 1), (17.14, 17.78, 'at the', 1),
-      (21.16, 23.06, 'He runs dozens of feeder accounts.', 0), (23.52, 25.36, 'Every one has its own niche,', 0), (25.52, 26.30, 'its own voice', 0),
+      (21.16, 23.06, 'He runs dozens of feeder accounts.', 0), (23.52, 25.36, 'Every one has its own niche,', 1), (25.52, 26.30, 'its own voice', 0),
       (26.30, 27.80, 'and its own time zone.', 0), (37.40, 39.28, 'Every social media marketer has this.', 0),
       (39.42, 41.25, 'A notes app full of prompts you copy,', 1), (41.42, 43.32, 'paste and rewrite 30 times a day,', 1), (43.60, 45.10, 'swapping one word each time.', 1),
       (47.52, 49.94, 'So I showed him the Prompt Library in Chatly.', 1), (50.24, 52.40, 'Write the prompt once and leave the blanks.', 1),
@@ -231,6 +231,21 @@ S_ = [(3.10, 3.90, "and I'm trying to save", 0), (11.90, 13.88, 'Every morning, 
       (62.48, 64.62, 'Faseeh doesn’t rewrite the same prompt 30 times', 0), (65.533, 66.30, "So if you're running", 1)]
 
 # ---------------------------------------------------------------- stickers (code)
+PHOTOS = []
+PHOTO_SPEC = [  # owner's photos (Downloads 2026-11-23): file, rect on black (x0,y0,x1,y1), handle, sticker colour
+    ('img02_15.07.42.jpeg', (330, 90, 1110, 1000), '@pawsdaily', 'pink'),
+    ('img04_15.07.44.jpeg', (150, 170, 1290, 900), '@offroad.trails', 'yellow'),
+    ('img05_15.07.45_(1).jpeg', (240, 120, 1240, 870), '@nightsout.live', 'blue'),
+    ('img09_15.32.36.jpeg', (120, 210, 1320, 885), '@goldenhour.co', 'green'),
+    ('img10_20.24.59.jpeg', (420, 70, 1060, 925), '@carspotting', 'yellow'),
+    ('img01_15.04.46.jpeg', (200, 140, 1220, 905), '@ridersclub', 'pink')]
+def build_photos():
+    from PIL import ImageOps
+    for f, (x0, y0, x1, y1), hk, col in PHOTO_SPEC:
+        im = ImageOps.exif_transpose(Image.open(f'{R}/faseeh/footage/images-1123/{f}').convert('RGB'))
+        im = ImageOps.fit(im, (x1 - x0, y1 - y0), Image.LANCZOS, centering=(.5, .45))
+        PHOTOS.append((cv2.cvtColor(np.array(im), cv2.COLOR_RGB2BGR), (x0, y0, x1, y1), 'ph_' + hk))
+        STK['ph_' + hk] = hand_sticker(hk, col, 110, [-4, 3, -2, 4, -3, 2][len(PHOTOS) - 1])
 STK = {}
 def build_stickers():
     STK['sf'] = png_sticker(f'{R}/assets/cut/F-01_02_v1122.png', 640, -3)
@@ -253,11 +268,8 @@ CUTS_WHIP = {12.0: 1, 18.967: -1, 28.1: 1, 62.467: -1, 65.533: 1}   # cut time -
 def frame_at(t):
     if t < 1.633:  img = live(t, .5)
     elif t < 3.133: img = live(t, .48)
-    elif t < 3.633: img = live(t, .5)
-    elif t < 4.967:  # report card FAIL, Faseeh's Meet face in the window
-        i = 26 + int(round((t - 3.633) * FPS)); plate = meet_tile(7.10 + (t - 3.633) * .8)
-        img = np.zeros((H, W, 3), np.uint8); img = warp_plate(img, plate, HOLE['P-22-reportcard-fail'][min(i, 63)])
-        img = over(img, OV['P-22-reportcard-fail'].frame(i))
+    elif t < 4.0:    img = live(t, .5)
+    elif t < 4.967:  img = live(t, .6)   # the owner's jump up from behind the plants
     elif t < 7.100:
         img = live(t, .42); lt = t - 6.04
         if lt >= 0: img = over(img, OV['P-24b-9am-card'].frame(int(lt * FPS)), dy=600, sc=.92)
@@ -270,7 +282,7 @@ def frame_at(t):
     elif t < 18.967: img = gfx('map', 15 / FPS + (t - 16.25))
     elif t < 20.633: img = live(t, .42)
     elif t < 23.667: img = live(t, .5)
-    elif t < 25.2:   img = live(t, .55)
+    elif t < 25.2:   img = gfx('cards', t - 23.667)   # P-33: owner's photos as feeder-account cards on the globe poster
     elif t < 26.467: img = live(t, .62)
     elif t < 28.1:   img = live(t, .40)
     elif t < 34.0:   img = gfx('posts', t - 28.1)

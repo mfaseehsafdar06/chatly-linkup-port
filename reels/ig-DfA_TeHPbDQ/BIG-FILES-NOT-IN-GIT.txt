@@ -1,5 +1,6 @@
 out/this-is-faseeh-chatly-v4-4x3-MASTER.mp4
 out/this-is-faseeh-chatly-v4-4x3.mp4
+out/this-is-faseeh-chatly-v5-4x3.mp4
 faseeh/edit/out/picture.mp4
 hf/P-22-reportcard-fail/out/P-22-reportcard-fail.mov
 hf/HF-27-reportcard-b/out/HF-27-reportcard-b.mov

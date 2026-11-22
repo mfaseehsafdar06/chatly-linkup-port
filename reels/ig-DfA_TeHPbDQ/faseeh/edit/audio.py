@@ -20,7 +20,7 @@ SEG = [(0.0, 5.0, 0.0, .02, .4),
 
 C = [  # (time, file, dB after peak-normalising to -1 dBFS, [trim])
  (1.12, 'pop-box', -15), (1.60, 'swish-air-quick', -19),
- (3.633, 'card-slap-paper', -10), (4.22, 'stamp-rubber-thunk', -15), (4.36, 'stamp-rubber-thunk', -13),
+ (3.96, 'whoosh-whip-fast', -12), (4.14, 'pop-box', -14), (4.30, 'pop-bubbly-ui', -13),
  (4.95, 'phone-vibrate-on-table', -17, 1.0), (6.02, 'swish-ui-soft', -14), (6.10, 'notif-ding-phone-bright', -12),
  (7.48, 'pop-glassy-select', -18), (9.22, 'card-slap-paper', -12),
  (10.90, 'stamp-text-slam-heavy', -15),
@@ -28,7 +28,7 @@ C = [  # (time, file, dB after peak-normalising to -1 dBFS, [trim])
  (16.22, 'whip-snap-zoom-a', -15), (17.60, 'whoosh-zoom-mid', -15),
  (17.75, 'pop-glassy-select', -14), (17.92, 'pop-tiny-heart', -14), (18.08, 'pop-glassy-select', -14),
  (18.93, 'whip-swish-tight', -12), (19.74, 'orch-hit-dramatic', -15), (20.60, 'whoosh-whip-fast', -14), (21.64, 'pop-box', -16),
- (26.50, 'typing-keys-b', -20, 1.5),
+ (23.625, 'card-slap-paper', -12), (23.917, 'card-slap-paper', -12), (24.375, 'card-slap-paper', -15), (24.459, 'card-slap-paper', -15), (24.542, 'card-slap-paper', -15), (24.625, 'card-slap-paper', -15), (24.250, 'whoosh-zoom-mid', -14), (26.50, 'typing-keys-b', -20, 1.5),
  (28.06, 'whoosh-rising-bright', -15), (28.10, 'pop-box', -13), (28.22, 'pop-bubbly-ui', -13), (28.34, 'pop-tiny-heart', -13), (28.12, 'card-slap-paper', -14),
  (29.86, 'card-slap-paper', -12), (30.48, 'card-slap-paper', -12), (31.22, 'card-slap-paper', -11),
  (31.40, 'ticker-rapid-count', -15, 1.15), (31.45, 'rev-cymbal-into-drop', -13),
