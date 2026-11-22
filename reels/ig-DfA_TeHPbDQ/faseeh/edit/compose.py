@@ -85,6 +85,28 @@ def blur_dark(img, k=0.45, b=0):
     if b: img = cv2.GaussianBlur(img, (0, 0), b)
     return (img.astype(np.float32) * (1 - k)).astype(np.uint8)
 
+
+# ---- screen treatment after the ref's app section (ref 42-58 s): photographed-screen look, sage-cream whites (L85 a-11 b+15),
+# lifted blacks (~L30-45), softness, gentle handheld drift + eased punch-ins on the part that matters
+def ease(x, a, b):
+    u = min(1, max(0, (x - a) / (b - a))); return u * u * (3 - 2 * u)
+_L = np.arange(256, dtype=np.float32)
+_LUT_L = (np.clip(30 + .57 * (_L / 2.55), 0, 100) * 2.55).astype(np.uint8)
+_yy, _xx = np.mgrid[0:H, 0:W]; _VIG = (1 - .14 * np.clip((np.sqrt(((_xx - W / 2) / (W * .6)) ** 2 + ((_yy - H / 2) / (H * .6)) ** 2) - .45) / .6, 0, 1) ** 1.6).astype(np.float32)[..., None]
+def refscreen(img, soft=True):
+    lab = cv2.cvtColor(img, cv2.COLOR_BGR2LAB); L0 = lab[..., 0].astype(np.float32) / 2.55
+    a = (lab[..., 1].astype(np.float32) - 128) * .8 - 3 - 8 * L0 / 100; b = (lab[..., 2].astype(np.float32) - 128) * .8 + 3 + 12 * L0 / 100
+    out = cv2.cvtColor(np.dstack([_LUT_L[lab[..., 0]], np.clip(a + 128, 0, 255).astype(np.uint8), np.clip(b + 128, 0, 255).astype(np.uint8)]), cv2.COLOR_LAB2BGR)
+    if soft: out = cv2.GaussianBlur(out, (0, 0), .7)
+    return np.clip(out.astype(np.float32) * _VIG, 0, 255).astype(np.uint8)
+def screen(img, t, z=1.0, cx=.5, cy=.5):
+    dx = math.sin(t * 1.9) * 5 + math.sin(t * 4.7) * 1.8; dy = math.cos(t * 1.5) * 4 + math.sin(t * 3.9) * 1.4
+    z = z * 1.03  # a hair of overscan so the drift never shows an edge
+    tx = W / 2 - cx * W * z + dx; ty = H / 2 - cy * H * z + dy
+    tx = min(0, max(W - W * z, tx)); ty = min(0, max(H - H * z, ty))
+    img = cv2.warpAffine(img, np.float32([[z, 0, tx], [0, z, ty]]), (W, H), flags=cv2.INTER_CUBIC, borderMode=cv2.BORDER_REPLICATE)
+    return refscreen(img)
+
 # ---------------------------------------------------------------- text + stickers
 _tc = {}
 def word_img(txt, size, italic=False, ui=False):
@@ -154,7 +176,7 @@ w(35.92, 37.3, "he's", 300, 470, 68); w(36.16, 37.3, 'not', 680, 330, 68); w(36.
 w(36.52, 37.3, 'only', 420, 760, 68, True); w(36.74, 37.3, 'one.', 960, 760, 68)
 w(45.52, 47.4, "let's", 120, 330, 72); w(45.82, 47.4, 'just', 190, 440, 72); w(45.98, 47.4, 'say…', 290, 560, 72)
 w(46.38, 47.4, "it doesn't", 760, 770, 64); w(46.94, 47.4, 'scale.', 760, 880, 112)
-w(60.82, 62.467, 'the whole team', 120, 800, 76, dark=True); w(61.56, 62.467, 'gets it.', 120, 900, 100, dark=True)
+
 w(64.62, 65.533, 'ANYMORE.', None, 960, 100, centre=True)
 w(68.72, 69.46, 'Comment', 70, 150, 84)
 w(69.46, 72.1, "and I'll send", 880, 760, 64); w(70.02, 72.1, 'you the exact one', 880, 830, 64); w(71.06, 72.1, 'Faseeh uses.', 880, 920, 84)
@@ -166,7 +188,7 @@ S_ = [(3.10, 3.90, "and I'm trying to save", 0), (11.90, 13.88, 'Every morning, 
       (39.42, 41.25, 'A notes app full of prompts you copy,', 1), (41.42, 43.32, 'paste and rewrite 30 times a day,', 1), (43.60, 45.10, 'swapping one word each time.', 1),
       (47.52, 49.94, 'So I showed him the Prompt Library in Chatly.', 1), (50.24, 52.40, 'Write the prompt once and leave the blanks.', 1),
       (52.62, 54.86, 'Type @ in any chat and it’s right there.', 1), (54.86, 57.84, 'Fill in the account, the niche, the platform', 1),
-      (57.84, 58.98, 'and it’s ready to send.', 1), (59.20, 60.64, 'And when he writes a good one,', 1),
+      (57.84, 58.98, 'and it’s ready to send.', 1), (59.20, 60.64, 'And when he writes a good one,', 1), (60.82, 62.40, 'the whole team gets it.', 1),
       (62.48, 64.62, 'Faseeh doesn’t rewrite the same prompt 30 times', 0), (65.533, 66.30, "So if you're running", 1)]
 
 # ---------------------------------------------------------------- stickers (code)
@@ -177,8 +199,17 @@ def build_stickers():
     STK['acc10'] = hand_sticker('10 ACCOUNTS', 'yellow', 170, -4)
     STK['or50'] = hand_sticker('OR 50', 'pink', 190, 5)
     STK['prompts'] = hand_sticker('"PROMPTS"', 'yellow', 200, -3)
+    for k, txt, col, h, r in [('s_rew', 'REWRITE', 'pink', 150, -4), ('s_30', '30x A DAY', 'yellow', 160, 3), ('s_one', 'ONE WORD', 'green', 150, -3),
+                              ('s_lib', 'PROMPT LIBRARY', 'blue', 170, -3), ('s_blank', '{{ BLANKS }}', 'green', 160, 4),
+                              ('s_acc', 'ACCOUNT', 'yellow', 140, -5), ('s_niche', 'NICHE', 'pink', 140, 4), ('s_plat', 'PLATFORM', 'blue', 140, -3),
+                              ('s_send', 'SEND!', 'green', 150, 5), ('s_team', 'WHOLE TEAM', 'pink', 170, -4)]:
+        STK[k] = hand_sticker(txt, col, h, r)
 
 # ---------------------------------------------------------------- timeline
+SCR_STK = [(41.86, 42.0, 's_rew', 1090, 760), (42.24, 45.4, 's_30', 1110, 230), (44.20, 45.4, 's_one', 380, 820),
+           (48.66, 50.20, 's_lib', 880, 175), (51.56, 52.5, 's_blank', 1060, 820),
+           (55.82, 57.84, 's_acc', 1170, 260), (56.66, 57.84, 's_niche', 1220, 420), (57.36, 57.84, 's_plat', 1150, 580),
+           (58.68, 59.1, 's_send', 1210, 230), (61.26, 62.467, 's_team', 1080, 230)]
 CUTS_WHIP = {12.0: 1, 18.967: -1, 28.1: 1, 62.467: -1, 65.533: 1}   # cut time -> direction
 def frame_at(t):
     if t < 1.633:  img = live(t, .5)
@@ -208,19 +239,25 @@ def frame_at(t):
     elif t < 37.3:  # ref 'she's not the only one': small window on black
         img = np.zeros((H, W, 3), np.uint8); p = cv2.resize(meet_tile(10.25 + (t - 35.8)), (420, 315), interpolation=cv2.INTER_AREA)
         img[383:698, 510:930] = p
-    elif t < 39.3:   img = gfx('montage', t - 37.3)
-    elif t < 42.0:   img = gfx('notes', t - 39.3)
-    elif t < 45.4:   img = gfx('doc', t - 42.0)
+    elif t < 39.3:   img = refscreen(gfx('montage', t - 37.3), soft=False)
+    elif t < 42.0:   img = screen(gfx('notes', t - 39.3), t, 1.0, .5, .5)
+    elif t < 45.4:
+        lt = t - 42.0; u = ease(lt, 2.3, 3.1); img = screen(gfx('doc', lt), t, 1 + 1.0 * u, .5 + (.47 - .5) * u, .5 + (.42 - .5) * u)
     elif t < 47.4:
-        img = blur_dark(gfx('doc', 99), .62, 3); lt = t - 46.54
+        img = blur_dark(screen(gfx('doc', 99), t, 2.0, .47, .42), .58, 3); lt = t - 46.54
         if lt >= 0: img = over(img, OV['P-11-upload-failed'].frame(int(lt * FPS)), dx=40, dy=-40)
-    elif t < 48.65:  img = gfx('card', t - 47.4)
-    elif t < 52.5:   img = gfx('lib', t - 48.65)
+    elif t < 48.65:  img = screen(gfx('card', t - 47.4), t, 1.0, .5, .5)
+    elif t < 52.5:
+        lt = t - 48.65; u1 = ease(lt, 1.9, 2.4); u2 = ease(lt, 2.95, 3.4)
+        z = 1 + .35 * u1 + (.55 - .35 * u1) * u2 if u2 > 0 else 1 + .35 * u1
+        img = screen(gfx('lib', lt), t, z, .5 + (.47 - .5) * u1 + (.42 - .47) * u2, .5 + (.47 - .5) * u1 + (.36 - .47) * u2)
     elif t < 54.9:
-        img = gfx('at', t - 52.5); lt = t - 52.90
-        if lt >= 0: img = over(img, OV['P-30-at-sticker'].frame(int(lt * FPS)))
-    elif t < 59.1:   img = gfx('fill', .35 + (t - 54.9))
-    elif t < 62.467: img = gfx('share', t - 59.1)
+        lt = t - 52.5; u = ease(lt, .5, 1.1); img = screen(gfx('at', lt), t, 1 + .45 * u, .5, .5 + .06 * u)
+        if t >= 52.90: img = over(img, OV['P-30-at-sticker'].frame(int((t - 52.90) * FPS)))
+    elif t < 59.1:
+        lt = .35 + (t - 54.9); u = ease(lt, 3.2, 3.8); img = screen(gfx('fill', lt), t, 1 + .4 * u, .5 + (.36 - .5) * u, .5 + (.34 - .5) * u)
+    elif t < 62.467:
+        lt = t - 59.1; u = ease(lt, 2.4, 3.0); img = screen(gfx('share', lt), t, 1 + .2 * u, .5 + (.42 - .5) * u, .5 + (.42 - .5) * u)
     elif t < 64.3:   img = live(t, .5)
     elif t < 65.533:  # PASS card, the dance keeps going in the window
         i = 4 + int(round((t - 64.3) * FPS)); plate = live(t, .5)
@@ -235,6 +272,9 @@ def frame_at(t):
     elif t < 73.35:
         img = blur_dark(live(72.05, .55), .4, 6); img = over(img, OV['P-05-endcard'].frame(int((t - 72.1) * FPS)))
     else:            img = gfx('outro', t - 73.35)
+    # paper stickers slapped on the screens on the VO word (ref: LOCATION / WORKING ON / PRIORITIES / ANYTIME)
+    for (t0, t1, k, cx, cy) in SCR_STK:
+        if t0 - 1e-6 <= t < t1 - 1e-6: img = pop(img, STK[k], t, t0, cx, cy, hash(k) % 97)
     # whip transitions: 2 frames each side of listed cuts
     for tc, dr in CUTS_WHIP.items():
         d = (t - tc) * FPS

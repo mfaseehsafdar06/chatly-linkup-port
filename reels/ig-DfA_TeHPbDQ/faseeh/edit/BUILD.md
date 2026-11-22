@@ -63,3 +63,23 @@
 | 68.8–72.1 | CTA live, "PROMPTS" sticker |
 | 72.1–73.35 | "a 💜 Chatly story" |
 | 73.35–78.35 | Official outro: "AI that works 24/7 for you." |
+
+## v2 (2026-11-22, after "no music, improve the artifacts")
+**Output:** `out/this-is-faseeh-chatly-v2-4x3.mp4`
+
+**Music:** the reference reel's own music.
+- It was separated from its voice with Demucs (htdemucs two-stem) into `faseeh/edit/music/ref_music.wav` (not in git).
+- It's spliced bar-aligned onto our structure: the 103 bpm cue and the 136 bpm cue, see `SEG` in audio.py.
+  - intro, then silence on the Meet call
+  - hits on the globe and map
+  - the 103 bpm cue from the cut to "impossible task" (18.967), with one bar repeated, through "360 posts a week"
+  - silence on "What the hell?"
+  - the quiet 136 bpm intro under the problem section
+  - the drop at 47.52 ("So I showed him…"), running into the outro
+- It's mixed like the reference: the bed at −21 LUFS, about 5 LU under the VO, with a light sidechain. The record scratch was dropped.
+- **Licence:** this is Lovable's ad audio, so it has to be cleared or replaced before publishing.
+
+**Screens 37.3–62.5:** the reference's app-section treatment (`refscreen`, `screen`).
+- Sage-cream whites (L85, a −11, b +15), lifted blacks and softness, matching the reference.
+- Handheld drift, and eased punch-ins on the Doc, the library list, @hook and the reply.
+- Paper stickers on the VO words (`SCR_STK`): REWRITE, 30x A DAY, ONE WORD, PROMPT LIBRARY, {{ BLANKS }}, ACCOUNT / NICHE / PLATFORM, SEND!, WHOLE TEAM.
