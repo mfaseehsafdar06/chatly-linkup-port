@@ -1,0 +1,8 @@
+<!doctype html><html><head><meta charset="utf-8"><style>html,body{margin:0}canvas{display:block}</style></head><body>
+<canvas id="c" width="1440" height="1080"></canvas><script src="../lib/kit.js"></script><script>
+const g=document.getElementById('c').getContext('2d');
+window.ready=Promise.resolve(true);
+window.render=t=>{HF.paper(g);const o={t,width:11};
+ HF.prims.box(g,200,200,400,180,{...o,color:HF.PAL.pink});HF.prims.ring(g,1000,300,200,120,{...o,color:HF.PAL.green,seed:4});
+ HF.prims.burst(g,400,750,80,200,9,{...o,color:HF.PAL.cyan,seed:7});HF.prims.coil(g,800,700,1300,800,5,40,{...o,color:HF.PAL.orange,seed:9});};
+</script></body></html>
