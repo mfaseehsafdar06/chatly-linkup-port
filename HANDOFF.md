@@ -152,3 +152,46 @@ Requirements and setup:
 
   Each asset goes in `hf/HF-XX-name/` with `out/` and `qa/`.
 - **Files over 95 MB** are listed in `reels/ig-DfA_TeHPbDQ/BIG-FILES-NOT-IN-GIT.txt` and attached to the `big-files` release.
+
+**2026-11-22, later: the deliverable changed.** It's now the owner's script "This is Faseeh", a Chatly Prompt Library story in the same style. See `reels/ig-DfA_TeHPbDQ/faseeh/`:
+- `SCRIPT.md`
+- `SHOTLIST.md`: 25 live-action shots the owner films. The VO is recorded by a teammate.
+- `props/`: props board and printable PDFs
+
+Graphics built so far, all in `hf/P-XX-*/out/` with timings in each `index.html` config:
+- **Chatly screens (built from the real chatly-web source):**
+  - P-01: library save, with `{{vars}}` turning into chips
+  - P-02: @-mention menu
+  - P-03: fill-in-the-blanks modal, then send
+  - P-04: "Who can use it" set to "Everyone at Chatly"
+  - P-05: "a 💜 Chatly story" end card + 4:3 outro
+- **Phone/laptop:**
+  - P-11: "Upload failed" dialog
+  - P-12: Notes "PROMPTS — DO NOT DELETE"
+  - P-13: Google Doc "MASTER PROMPTS v12 FINAL"
+  - P-14: "not the only one" window matte
+- **Paper overlays:**
+  - P-21: FASEEH slap
+  - P-22 / P-23: report card FAIL / PASS (photo hole + hole.json)
+  - P-24: 2AM / 9am card / in NEW YORK
+  - P-25: map circles + −5 / 0 / +5
+  - P-26: sticky notes
+  - P-27: 30×3×7 = 630
+  - P-28: scroll ticks
+  - P-29: prompt cards
+  - P-30: @
+
+**Waiting on:** the owner's footage and the VO.
+
+**Then:**
+1. Set the overlay positions to the real plates (config blocks).
+2. Cut to the VO.
+3. Time the captions (reuse `HF-01-captions`).
+4. Run the grade pass.
+5. Add the outro.
+
+**Open decisions:**
+- The numbers (30 × 3 × 7).
+- San Francisco vs. the +5 sticker.
+- The @studyhacks.pk handle.
+- Whether heart + mark on the end card reads as doubled.

@@ -1,0 +1,47 @@
+<!doctype html><html><head><meta charset="utf-8">
+<link rel="stylesheet" href="../../../../reference/chatly-ui-kit/chatly-ui.css">
+<link rel="stylesheet" href="../_chatly/pl.css">
+</head><body><div id="stage"></div>
+<script type="module">
+// P-04: "Edit prompt" -> "Who can use it" (PromptVisibilitySelect) from "Only you" to "Everyone at {orgName}" (the real Team option),
+// Save changes, and the card's visibility badge flips from the lock to the people icon ("Shared with your team").
+import { shell, libraryPage, editorModal, cursor, stage, keys, clamp, MINE, OTHER_PROMPTS } from '../_chatly/pl.js';
+const T_OPEN = 0.5, T_PICK = 1.05, T_SAVE = 1.6, T_CLOSE = 1.66;
+const TEAM = { ...MINE, vis: 'team' };
+function html(t, extra = '') {
+  const vis = t >= T_PICK ? 'team' : 'private';
+  if (t >= T_CLOSE) { const u = clamp((t - T_CLOSE) / 0.15);
+    return shell({ main: libraryPage({ prompts: [TEAM, ...OTHER_PROMPTS] }), overlay: (u < 1 ? `<div style="position:absolute;inset:0;z-index:100;opacity:${1 - u}">${editorModal({ edit: true, vis: 'team' })}</div>` : '') + extra }); }
+  const ddOpen = t >= T_OPEN && t < T_PICK;
+  let m = editorModal({ edit: true, vis, ddOpen, ddHover: t > 0.82 ? 'team' : '', visHover: t > 0.38 && t < T_OPEN, saveHover: t > 1.45, saveDown: t >= T_SAVE && t < T_SAVE + 0.08 });
+  if (ddOpen) { const u = clamp((t - T_OPEN) / 0.1); m = m.replace('<div class="dd" style="', `<div class="dd" style="opacity:${u};transform:translateY(${(1 - u) * -4}px) scale(${0.97 + 0.03 * u});transform-origin:top right;`); }
+  return shell({ main: libraryPage({ prompts: [MINE, ...OTHER_PROMPTS] }), overlay: `<div style="position:absolute;inset:0;z-index:100">${m}</div>` + extra });
+}
+let S, G = {};
+const box = el => { const r = el.getBoundingClientRect(); return { x: r.left + r.width / 2, y: r.top + r.height / 2, l: r.left, t: r.top, w: r.width, h: r.height, b: r.bottom, r: r.right }; };
+window.ready = (async () => {
+  S = stage(); await document.fonts.load('14px GS'); await document.fonts.ready; S.sharp.style.transform = 'none';
+  S.sharp.innerHTML = html(0.8); G.trig = box(S.sharp.querySelectorAll('#modal .fld .inp')[1]); G.dd = box(S.sharp.querySelector('#modal .dd')); G.team = box(S.sharp.querySelectorAll('#modal .ddo')[1]);
+  G.save = box(S.sharp.querySelector('#modal .mf .pri')); G.modal = box(S.sharp.querySelector('#modal'));
+  S.sharp.innerHTML = html(2.4); G.card = box(S.sharp.querySelector('.pcard')); G.badge = box(S.sharp.querySelector('.pcard .badge'));
+})();
+window.render = t => {
+  const ddc = { x: G.dd.x - 40, y: (G.trig.t + G.dd.b) / 2 };
+  const K = [
+    [0, [2.0, G.trig.x - 120, G.trig.y + 40, 720, 470, 6, -0.6]],
+    [0.45, [2.05, G.trig.x - 100, G.trig.y + 60, 720, 470, 6, -0.6]],
+    [0.7, [2.25, ddc.x, ddc.y, 720, 540, 5.5, -0.5]],
+    [1.15, [2.3, ddc.x - 10, ddc.y, 716, 540, 5.5, -0.4]],
+    [1.5, [1.62, G.save.x - 220, G.save.y - 160, 760, 560, 6, -0.6]],
+    [1.68, [1.62, G.save.x - 220, G.save.y - 160, 760, 560, 6, -0.6]],
+    [1.95, [2.2, G.badge.x - 40, G.badge.y + 20, 720, 540, 6, -0.6]],
+    [2.6, [3.1, G.badge.x - 70, G.badge.y + 10, 716, 540, 5, -0.5]],
+  ];
+  const [s, ax, ay, sx, sy, ry, rz] = keys(K, t);
+  const CK = [[0, [G.trig.x + 260, G.trig.y + 220]], [0.42, [G.trig.x + 30, G.trig.y + 4]], [0.6, [G.trig.x + 34, G.trig.y + 8]], [0.95, [G.team.x - 40, G.team.y + 2]], [1.12, [G.team.x - 36, G.team.y + 6]],
+    [1.5, [G.save.x + 4, G.save.y + 4]], [1.8, [G.save.x + 2, G.save.y + 8]]];
+  const p = keys(CK, t), kind = (t > 0.36 && t < 0.62) || (t > 0.85 && t < 1.15) || (t > 1.42 && t < T_CLOSE + 0.1) ? 'hand' : 'arrow';
+  const cur = t < T_CLOSE + 0.15 ? cursor(p[0], p[1], kind) : '';
+  S.frame(html(t, cur), { s, ax, ay, sx, sy, ry, rz, blur: 3.5 });
+};
+</script></body></html>
